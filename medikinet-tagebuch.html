@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Medikinet Tagebuch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {font-family: system-ui; background: #f5f7fb; margin: 0; padding: 16px;}
+    .app {max-width: 1100px; margin: 0 auto;}
+    h1 {text-align: center;}
+    .card {background: white; border-radius: 16px; padding: 16px 20px; box-shadow: 0 10px 25px rgba(15,23,42,0.08); margin-bottom: 16px;}
+    table {width: 100%; border-collapse: collapse;}
+    th, td {border: 1px solid #e0e3ef; padding: 6px; text-align: center;}
+    th {background: #eef1ff; font-weight: 600;}
+    select, textarea, input {border: 1px solid #d0d4e4; border-radius: 8px; padding: 6px; font-size: 14px;}
+    .btn {padding: 8px 12px; border-radius: 999px; border: none; background: #4f46e5; color: white; cursor: pointer;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>🧾 Medikinet-Tagebuch</h1>
+    <p>Alle Eingaben werden nur lokal im Browser gespeichert.</p>
+    <table>
+      <tr><th>Bereich</th><th>Bewertung</th></tr>
+      <tr><td>Stimmung</td><td><select id='stimmung'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
+      <tr><td>Konzentration Schule</td><td><select id='konz'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
+      <tr><td>Überreizung Vormittag</td><td><select id='vorm'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
+      <tr><td>Überreizung Abend</td><td><select id='abend'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
+      <tr><td>Ausbrüche</td><td><input type='checkbox' id='ausbr'/></td></tr>
+      <tr><td>Auffälligkeiten</td><td><textarea id='auff' placeholder='z. B. Kopfweh, Bauchweh...'></textarea></td></tr>
+    </table>
+    <button class='btn' onclick='exportCsv()'>📁 Als CSV exportieren</button>
+  </div>
+  <script>
+    const fields=['stimmung','konz','vorm','abend','ausbr','auff'];
+    function exportCsv(){
+      const data=fields.map(id=>document.getElementById(id).value||document.getElementById(id).checked).join(';');
+      const blob=new Blob([data],{type:'text/csv'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='medikinet.csv';a.click();
+    }
+  </script>
+</body>
+</html>
