@@ -122,71 +122,6 @@
       accent-color: var(--primary);
     }
 
-    fieldset.checkbox-cluster {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px 16px 18px;
-      display: grid;
-      gap: 12px;
-    }
-
-    fieldset.checkbox-cluster legend {
-      font-weight: 700;
-      font-size: 0.95rem;
-      padding: 0 8px;
-    }
-
-    .checkbox-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-    }
-
-    .checkbox-grid .checkbox-row {
-      padding: 4px 0;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: rgba(79, 70, 229, 0.12);
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .muted {
-      color: #6b7280;
-    }
-
-    .table-action {
-      background: transparent;
-      border: 1px solid rgba(79, 70, 229, 0.3);
-      color: var(--primary);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .table-action:hover {
-      background: rgba(79, 70, 229, 0.08);
-    }
-
-    .entry-card .table-action {
-      justify-self: start;
-    }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -485,27 +420,10 @@
           </label>
         </div>
 
-        <fieldset class="checkbox-cluster">
-          <legend>Besondere Beobachtungen heute</legend>
-          <div class="checkbox-grid">
-            <label class="checkbox-row" for="ausbr">
-              <input type="checkbox" id="ausbr" name="ausbr" />
-              Auffällige Ausbrüche
-            </label>
-            <label class="checkbox-row" for="kopfweh">
-              <input type="checkbox" id="kopfweh" name="kopfweh" />
-              Kopfweh
-            </label>
-            <label class="checkbox-row" for="bauchweh">
-              <input type="checkbox" id="bauchweh" name="bauchweh" />
-              Bauchweh
-            </label>
-            <label class="checkbox-row" for="schwindel">
-              <input type="checkbox" id="schwindel" name="schwindel" />
-              Schwindel
-            </label>
-          </div>
-        </fieldset>
+        <label class="checkbox-row">
+          <input type="checkbox" id="ausbr" name="ausbr" />
+          Auffällige Ausbrüche heute
+        </label>
 
         <label>
           Auffälligkeiten &amp; Notizen
@@ -514,6 +432,7 @@
 
         <div class="actions">
           <button type="button" class="secondary" id="reset-btn">Formular leeren</button>
+          <button type="button" class="danger" id="delete-all-btn">Alle Einträge löschen</button>
           <button type="submit" class="primary">💾 Eintrag speichern</button>
         </div>
       </form>
@@ -541,9 +460,7 @@
               <th>Überreizung (VM)</th>
               <th>Überreizung (Ab)</th>
               <th>Ausbrüche</th>
-              <th>Nebenwirkungen</th>
               <th>Notizen</th>
-              <th>Aktion</th>
             </tr>
           </thead>
           <tbody id="entries-body"></tbody>
@@ -559,6 +476,7 @@
     const entriesBody = document.getElementById("entries-body");
     const entriesList = document.getElementById("entries-list");
     const historyMeta = document.getElementById("history-meta");
+    const deleteAllBtn = document.getElementById("delete-all-btn");
     const resetBtn = document.getElementById("reset-btn");
     const exportBtn = document.getElementById("export-btn");
     const storageWarning = document.getElementById("storage-warning");
@@ -571,13 +489,8 @@
       "vorm",
       "abend",
       "ausbr",
-      "kopfweh",
-      "bauchweh",
-      "schwindel",
       "auff",
     ];
-
-    const booleanFields = new Set(["ausbr", "kopfweh", "bauchweh", "schwindel"]);
 
     const today = new Date();
     let storageAvailable = true;
@@ -680,29 +593,6 @@
       }
     }
 
-    function collectSideEffects(entry) {
-      return [
-        entry.kopfweh ? "Kopfweh" : null,
-        entry.bauchweh ? "Bauchweh" : null,
-        entry.schwindel ? "Schwindel" : null,
-      ].filter(Boolean);
-    }
-
-    function formatSideEffectsText(entry) {
-      const list = collectSideEffects(entry);
-      return list.length ? list.join(", ") : "Keine";
-    }
-
-    function createSideEffectsTags(entry) {
-      const list = collectSideEffects(entry);
-      if (!list.length) {
-        return '<span class="muted">Keine</span>';
-      }
-      return `<div class="tag-list">${list
-        .map((label) => `<span class="tag">${label}</span>`)
-        .join("")}</div>`;
-    }
-
     function renderEntries() {
       const entries = readEntries();
       entriesBody.innerHTML = "";
@@ -711,7 +601,7 @@
       }
 
       if (!entries.length) {
-        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="9">Noch keine Einträge gespeichert.</td></tr>`;
+        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="7">Noch keine Einträge gespeichert.</td></tr>`;
         if (entriesList) {
           entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
         }
@@ -728,9 +618,7 @@
           <td>${entry.vorm}</td>
           <td>${entry.abend}</td>
           <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
-          <td>${formatSideEffectsText(entry)}</td>
           <td>${entry.auff ? entry.auff.replace(/\n/g, "<br>") : ""}</td>
-          <td><button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Löschen</button></td>
         `;
         entriesBody.appendChild(row);
 
@@ -762,15 +650,10 @@
                 <dd>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</dd>
               </div>
               <div>
-                <dt>Nebenwirkungen</dt>
-                <dd>${createSideEffectsTags(entry)}</dd>
-              </div>
-              <div>
                 <dt>Notizen</dt>
                 <dd>${notes}</dd>
               </div>
             </dl>
-            <button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Eintrag löschen</button>
           `;
           entriesList.appendChild(card);
         }
@@ -785,7 +668,7 @@
       const entry = {};
 
       for (const field of fields) {
-        if (booleanFields.has(field)) {
+        if (field === "ausbr") {
           entry[field] = formData.get(field) === "on";
         } else {
           entry[field] = (formData.get(field) || "").toString().trim();
@@ -808,23 +691,22 @@
       setDefaultDate();
     }
 
-    function deleteEntryByDate(entryDate) {
-      if (!entryDate) return;
-      const entries = readEntries();
-      const index = entries.findIndex((item) => item.datum === entryDate);
-      if (index === -1) return;
-      const confirmDelete = window.confirm(`Eintrag vom ${entryDate} löschen?`);
+    function handleDeleteAll() {
+      const confirmDelete = window.confirm("Sollen wirklich alle Einträge gelöscht werden?");
       if (!confirmDelete) return;
-      entries.splice(index, 1);
-      saveEntries(entries);
+      if (!storageAvailable) {
+        memoryEntries = [];
+      } else {
+        try {
+          localStorage.removeItem(storageKey);
+        } catch (error) {
+          memoryEntries = [];
+          disableStorage(error);
+        }
+      }
       renderEntries();
-    }
-
-    function handleEntryAction(event) {
-      const button = event.target.closest('[data-action="delete-entry"]');
-      if (!button) return;
-      const { entryDate } = button.dataset;
-      deleteEntryByDate(entryDate);
+      form.reset();
+      setDefaultDate();
     }
 
     function handleReset() {
@@ -846,9 +728,6 @@
         "Überreizung Vormittag",
         "Überreizung Abend",
         "Ausbrüche",
-        "Kopfweh",
-        "Bauchweh",
-        "Schwindel",
         "Auffälligkeiten",
       ];
 
@@ -859,9 +738,6 @@
         entry.vorm,
         entry.abend,
         entry.ausbr ? "Ja" : "Nein",
-        entry.kopfweh ? "Ja" : "Nein",
-        entry.bauchweh ? "Ja" : "Nein",
-        entry.schwindel ? "Ja" : "Nein",
         entry.auff?.replace(/\r?\n/g, " ").replace(/"/g, '""') || "",
       ]);
 
@@ -905,12 +781,8 @@
       mobileQuery.addListener(syncHistoryView);
     }
 
-    entriesBody.addEventListener("click", handleEntryAction);
-    if (entriesList) {
-      entriesList.addEventListener("click", handleEntryAction);
-    }
-
     form.addEventListener("submit", handleSubmit);
+    deleteAllBtn.addEventListener("click", handleDeleteAll);
     resetBtn.addEventListener("click", handleReset);
     exportBtn.addEventListener("click", exportCsv);
 
