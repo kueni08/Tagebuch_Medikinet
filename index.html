@@ -1,3 +1,4 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/index.html b/index.html
 new file mode 100644
 index 0000000000000000000000000000000000000000..566920a31506658141e43ebc42cb5d79349ef6ba
@@ -926,3 +927,6 @@ index 0000000000000000000000000000000000000000..566920a31506658141e43ebc42cb5d79
 +  </script>
 +</body>
 +</html>
+ 
+EOF
+)
