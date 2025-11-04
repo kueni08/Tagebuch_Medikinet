@@ -122,71 +122,6 @@
       accent-color: var(--primary);
     }
 
-    fieldset.checkbox-cluster {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px 16px 18px;
-      display: grid;
-      gap: 12px;
-    }
-
-    fieldset.checkbox-cluster legend {
-      font-weight: 700;
-      font-size: 0.95rem;
-      padding: 0 8px;
-    }
-
-    .checkbox-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-    }
-
-    .checkbox-grid .checkbox-row {
-      padding: 4px 0;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: rgba(79, 70, 229, 0.12);
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .muted {
-      color: #6b7280;
-    }
-
-    .table-action {
-      background: transparent;
-      border: 1px solid rgba(79, 70, 229, 0.3);
-      color: var(--primary);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .table-action:hover {
-      background: rgba(79, 70, 229, 0.08);
-    }
-
-    .entry-card .table-action {
-      justify-self: start;
-    }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -444,20 +379,19 @@
 </head>
 <body>
   <div class="app">
-      <header>
-        <h1>☁️ Medikinet-Tagebuch (Cloud)</h1>
-        <p>Diese Variante synchronisiert alle Einträge mit einem JSONBin. Lege den Bin vorab an und trage deine Schlüssel in <code>cloud-config.js</code> ein.</p>
-      </header>
+    <header>
+      <h1>☁️ Medikinet-Tagebuch (Cloud)</h1>
+      <p>Diese Variante synchronisiert alle Einträge mit einem Supabase-Cloud-Speicher. Stelle sicher, dass deine Konfiguration gesetzt ist, bevor du beginnst.</p>
+    </header>
 
     <section class="card" aria-labelledby="cloud-info">
       <div class="badge" id="cloud-info">Cloud-Speicher</div>
-        <div class="info-banner">
-          <strong>So funktioniert es:</strong>
-          <span>• Kopiere <code>cloud-config.example.js</code> zu <code>cloud-config.js</code> und hinterlege dort deine JSONBin-Bin-ID sowie den <code>X-Master-Key</code> (optional <code>X-Access-Key</code>).</span>
-          <span>• Lege bei <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a> einen Bin mit dem Inhalt <code>{ "entries": [] }</code> an und notiere dir die erzeugte ID.</span>
-          <span>• Die API-Schlüssel findest du im JSONBin-Dashboard unter <em>API Keys</em>. Bewahre den Master Key sicher auf.</span>
-          <span>• Beim Speichern wird pro Datum überschrieben; jeder Eintrag lässt sich einzeln wieder löschen.</span>
-        </div>
+      <div class="info-banner">
+        <strong>So funktioniert es:</strong>
+        <span>• Trage deine Supabase-Zugangsdaten in <code>cloud-config.js</code> ein.</span>
+        <span>• Aktiviere Zeilen-Sicherheit (RLS) und erlaube der Tabelle <code>medikinet_entries</code> anonyme Lese- und Schreibrechte.</span>
+        <span>• Jeder Eintrag wird anhand des Datums überschrieben, falls bereits vorhanden.</span>
+      </div>
       <div class="status" id="cloud-status" role="status" aria-live="polite" data-tone="info">Warte auf Konfiguration…</div>
     </section>
 
@@ -511,27 +445,10 @@
           </label>
         </div>
 
-        <fieldset class="checkbox-cluster">
-          <legend>Besondere Beobachtungen heute</legend>
-          <div class="checkbox-grid">
-            <label class="checkbox-row" for="ausbr">
-              <input type="checkbox" id="ausbr" name="ausbr" />
-              Auffällige Ausbrüche
-            </label>
-            <label class="checkbox-row" for="kopfweh">
-              <input type="checkbox" id="kopfweh" name="kopfweh" />
-              Kopfweh
-            </label>
-            <label class="checkbox-row" for="bauchweh">
-              <input type="checkbox" id="bauchweh" name="bauchweh" />
-              Bauchweh
-            </label>
-            <label class="checkbox-row" for="schwindel">
-              <input type="checkbox" id="schwindel" name="schwindel" />
-              Schwindel
-            </label>
-          </div>
-        </fieldset>
+        <label class="checkbox-row">
+          <input type="checkbox" id="ausbr" name="ausbr" />
+          Auffällige Ausbrüche heute
+        </label>
 
         <label>
           Auffälligkeiten &amp; Notizen
@@ -540,6 +457,7 @@
 
         <div class="actions">
           <button type="button" class="secondary" id="reset-btn">Formular leeren</button>
+          <button type="button" class="danger" id="delete-all-btn">Alle Einträge löschen</button>
           <button type="submit" class="primary">☁️ Eintrag speichern</button>
         </div>
       </form>
@@ -561,9 +479,7 @@
               <th>Überreizung (VM)</th>
               <th>Überreizung (Ab)</th>
               <th>Ausbrüche</th>
-              <th>Nebenwirkungen</th>
               <th>Notizen</th>
-              <th>Aktion</th>
             </tr>
           </thead>
           <tbody id="entries-body"></tbody>
@@ -574,13 +490,14 @@
   </div>
 
   <script type="module">
-    const config = window.MEDIKINET_CLOUD_CONFIG || {};
-    const API_BASE = "https://api.jsonbin.io/v3/b";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.2/+esm";
 
+    const config = window.MEDIKINET_CLOUD_CONFIG;
     const form = document.getElementById("entry-form");
     const entriesBody = document.getElementById("entries-body");
     const entriesList = document.getElementById("entries-list");
     const historyMeta = document.getElementById("history-meta");
+    const deleteAllBtn = document.getElementById("delete-all-btn");
     const resetBtn = document.getElementById("reset-btn");
     const exportBtn = document.getElementById("export-btn");
     const cloudStatus = document.getElementById("cloud-status");
@@ -593,17 +510,12 @@
       "vorm",
       "abend",
       "ausbr",
-      "kopfweh",
-      "bauchweh",
-      "schwindel",
       "auff",
     ];
 
-    const booleanFields = new Set(["ausbr", "kopfweh", "bauchweh", "schwindel"]);
-
     const today = new Date();
+    let supabase;
     let cachedEntries = [];
-    let lastSyncedAt = null;
 
     const mobileQuery = window.matchMedia("(max-width: 720px)");
 
@@ -650,29 +562,6 @@
       mobileQuery.addListener(syncHistoryView);
     }
 
-    function collectSideEffects(entry) {
-      return [
-        entry.kopfweh ? "Kopfweh" : null,
-        entry.bauchweh ? "Bauchweh" : null,
-        entry.schwindel ? "Schwindel" : null,
-      ].filter(Boolean);
-    }
-
-    function formatSideEffectsText(entry) {
-      const list = collectSideEffects(entry);
-      return list.length ? list.join(", ") : "Keine";
-    }
-
-    function createSideEffectsTags(entry) {
-      const list = collectSideEffects(entry);
-      if (!list.length) {
-        return '<span class="muted">Keine</span>';
-      }
-      return `<div class="tag-list">${list
-        .map((label) => `<span class="tag">${label}</span>`)
-        .join("")}</div>`;
-    }
-
     function normalizeEntry(entry) {
       return {
         datum: entry.datum ?? "",
@@ -681,47 +570,8 @@
         vorm: entry.vorm ?? "",
         abend: entry.abend ?? "",
         ausbr: Boolean(entry.ausbr),
-        kopfweh: Boolean(entry.kopfweh),
-        bauchweh: Boolean(entry.bauchweh),
-        schwindel: Boolean(entry.schwindel),
-        auff: entry.auff ? entry.auff.toString() : "",
+        auff: entry.auff ?? "",
       };
-    }
-
-    function sortByDate(a, b) {
-      if (!a?.datum) return -1;
-      if (!b?.datum) return 1;
-      return a.datum.localeCompare(b.datum);
-    }
-
-    function formatTimestamp(isoString) {
-      if (!isoString) return null;
-      const date = new Date(isoString);
-      if (Number.isNaN(date.getTime())) return null;
-      return date.toLocaleString("de-DE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      });
-    }
-
-    function buildHistorySummary(entries) {
-      if (!entries.length) {
-        return "Noch keine Einträge";
-      }
-      const first = entries[0]?.datum;
-      const last = entries[entries.length - 1]?.datum;
-      const range =
-        first && last ? (first === last ? first : `${first} bis ${last}`) : "";
-      const timestamp = formatTimestamp(lastSyncedAt);
-      const base = range ? `${entries.length} Einträge (${range})` : `${entries.length} Einträge`;
-      return timestamp ? `${base} · Stand ${timestamp}` : base;
-    }
-
-    function buildStatusSummary(entries) {
-      if (!entries.length) {
-        return "Cloud verbunden. Noch keine Einträge gespeichert.";
-      }
-      return `Cloud synchronisiert – ${buildHistorySummary(entries)}`;
     }
 
     function updateHistoryMeta(entries) {
@@ -730,7 +580,9 @@
         historyMeta.textContent = "Noch keine Einträge";
         return;
       }
-      historyMeta.textContent = `Synchronisiert: ${buildHistorySummary(entries)}`;
+      const first = entries[0]?.datum;
+      const last = entries[entries.length - 1]?.datum;
+      historyMeta.textContent = `Synchronisiert: ${entries.length} Einträge (${first} bis ${last})`;
     }
 
     function renderToDom(entries) {
@@ -740,7 +592,7 @@
       }
 
       if (!entries.length) {
-        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="9">Noch keine Einträge gespeichert.</td></tr>`;
+        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="7">Noch keine Einträge gespeichert.</td></tr>`;
         if (entriesList) {
           entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
         }
@@ -749,7 +601,6 @@
       }
 
       for (const entry of entries) {
-        const notesHtml = entry.auff ? entry.auff.replace(/\n/g, "<br>") : "";
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${entry.datum}</td>
@@ -758,9 +609,7 @@
           <td>${entry.vorm}</td>
           <td>${entry.abend}</td>
           <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
-          <td>${formatSideEffectsText(entry)}</td>
-          <td>${notesHtml}</td>
-          <td><button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Löschen</button></td>
+          <td>${entry.auff ? entry.auff.replace(/\n/g, "<br>") : ""}</td>
         `;
         entriesBody.appendChild(row);
 
@@ -792,15 +641,10 @@
                 <dd>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</dd>
               </div>
               <div>
-                <dt>Nebenwirkungen</dt>
-                <dd>${createSideEffectsTags(entry)}</dd>
-              </div>
-              <div>
                 <dt>Notizen</dt>
                 <dd>${notes}</dd>
               </div>
             </dl>
-            <button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Eintrag löschen</button>
           `;
           entriesList.appendChild(card);
         }
@@ -809,123 +653,80 @@
       updateHistoryMeta(entries);
     }
 
-    function buildHeaders(includeContentType = false) {
-      const headers = {};
-      if (config.masterKey) {
-        headers["X-Master-Key"] = config.masterKey;
-      }
-      if (config.accessKey) {
-        headers["X-Access-Key"] = config.accessKey;
-      }
-      if (includeContentType) {
-        headers["Content-Type"] = "application/json";
-      }
-      return headers;
+    async function fetchEntries() {
+      const { data, error } = await supabase
+        .from(config.table)
+        .select("datum, stimmung, konz, vorm, abend, ausbr, auff")
+        .order("datum", { ascending: true });
+      if (error) throw error;
+      return data.map(normalizeEntry);
     }
 
-    async function fetchFromJsonBin() {
-      const url = `${API_BASE}/${config.binId}/latest`;
-      const response = await fetch(url, { headers: buildHeaders() });
-      if (response.status === 404) {
-        throw new Error("Bin nicht gefunden (404). Bitte überprüfe deine JSONBin-ID.");
-      }
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `HTTP ${response.status}`);
-      }
-      const payload = await response.json();
-      lastSyncedAt =
-        payload.metadata?.updatedAt ||
-        payload.metadata?.modifiedAt ||
-        payload.metadata?.createdAt ||
-        null;
-      const entries = Array.isArray(payload.record?.entries) ? payload.record.entries : [];
-      return entries.map(normalizeEntry).sort(sortByDate);
-    }
-
-    async function pushToJsonBin(entries) {
-      const url = `${API_BASE}/${config.binId}`;
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          ...buildHeaders(true),
-          "X-Bin-Versioning": "false",
-        },
-        body: JSON.stringify({
-          entries,
-          updatedAt: new Date().toISOString(),
-        }),
-      });
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `HTTP ${response.status}`);
-      }
-      const payload = await response.json();
-      lastSyncedAt =
-        payload.metadata?.updatedAt ||
-        payload.metadata?.modifiedAt ||
-        new Date().toISOString();
-      const savedEntries = Array.isArray(payload.record?.entries) ? payload.record.entries : entries;
-      return savedEntries.map(normalizeEntry).sort(sortByDate);
-    }
-
-    async function refreshEntries({ silent = false } = {}) {
-      if (!silent) {
-        setStatus("Synchronisiere mit JSONBin…", "info");
-      }
+    async function renderEntries() {
+      if (!supabase) return;
+      setStatus("Synchronisiere Einträge…", "info");
       try {
-        const entries = await fetchFromJsonBin();
-        cachedEntries = entries;
+        cachedEntries = await fetchEntries();
         renderToDom(cachedEntries);
-        if (!silent) {
-          setStatus(buildStatusSummary(entries), "success");
-        }
-        return entries;
+        setStatus(`Cloud synchronisiert (${cachedEntries.length} Einträge).`, "success");
       } catch (error) {
         console.error("Fehler beim Laden", error);
-        if (!silent) {
-          setStatus(`Laden fehlgeschlagen: ${error.message}`, "error");
-        }
-        throw error;
+        renderToDom([]);
+        setStatus(`Fehler beim Laden: ${error.message}`, "error");
       }
     }
 
-    async function handleSubmit(event) {
-      event.preventDefault();
+    function readFormData() {
       const formData = new FormData(form);
       const entry = {};
-
       for (const field of fields) {
-        if (booleanFields.has(field)) {
+        if (field === "ausbr") {
           entry[field] = formData.get(field) === "on";
         } else {
           entry[field] = (formData.get(field) || "").toString().trim();
         }
       }
+      return entry;
+    }
 
+    async function handleSubmit(event) {
+      event.preventDefault();
+      if (!supabase) return;
+      const entry = readFormData();
       toggleFormDisabled(true);
-      setStatus("Speichere Eintrag…", "info");
-
+      setStatus("Speichere Eintrag in der Cloud…", "info");
       try {
-        const latest = await fetchFromJsonBin();
-        const next = [...latest];
-        const index = next.findIndex((item) => item.datum === entry.datum);
-        if (index >= 0) {
-          next[index] = entry;
-        } else {
-          next.push(entry);
-        }
-        next.sort(sortByDate);
-
-        const saved = await pushToJsonBin(next);
-        cachedEntries = saved;
-        renderToDom(cachedEntries);
+        const { error } = await supabase
+          .from(config.table)
+          .upsert([entry], { onConflict: "datum" });
+        if (error) throw error;
+        setStatus("Eintrag gespeichert.", "success");
         form.reset();
         setDefaultDate();
-        setStatus(buildStatusSummary(cachedEntries), "success");
+        await renderEntries();
       } catch (error) {
         console.error("Fehler beim Speichern", error);
         setStatus(`Speichern fehlgeschlagen: ${error.message}`, "error");
+      } finally {
+        toggleFormDisabled(false);
+      }
+    }
+
+    async function handleDeleteAll() {
+      if (!supabase) return;
+      const confirmDelete = window.confirm("Sollen wirklich alle Einträge in der Cloud gelöscht werden?");
+      if (!confirmDelete) return;
+      toggleFormDisabled(true);
+      setStatus("Lösche alle Cloud-Einträge…", "info");
+      try {
+        const { error } = await supabase.from(config.table).delete().neq("datum", "");
+        if (error) throw error;
+        cachedEntries = [];
+        renderToDom([]);
+        setStatus("Alle Einträge gelöscht.", "success");
+      } catch (error) {
+        console.error("Fehler beim Löschen", error);
+        setStatus(`Löschen fehlgeschlagen: ${error.message}`, "error");
       } finally {
         toggleFormDisabled(false);
       }
@@ -949,9 +750,6 @@
         "Überreizung Vormittag",
         "Überreizung Abend",
         "Ausbrüche",
-        "Kopfweh",
-        "Bauchweh",
-        "Schwindel",
         "Auffälligkeiten",
       ];
 
@@ -962,9 +760,6 @@
         entry.vorm,
         entry.abend,
         entry.ausbr ? "Ja" : "Nein",
-        entry.kopfweh ? "Ja" : "Nein",
-        entry.bauchweh ? "Ja" : "Nein",
-        entry.schwindel ? "Ja" : "Nein",
         entry.auff?.replace(/\r?\n/g, " ").replace(/"/g, '""') || "",
       ]);
 
@@ -990,47 +785,9 @@
       URL.revokeObjectURL(downloadLink.href);
     }
 
-    async function deleteEntryByDate(entryDate) {
-      if (!entryDate) return;
-      const confirmDelete = window.confirm(`Eintrag vom ${entryDate} löschen?`);
-      if (!confirmDelete) return;
-
-      toggleFormDisabled(true);
-      setStatus(`Lösche Eintrag vom ${entryDate}…`, "info");
-
-      try {
-        const latest = await fetchFromJsonBin();
-        const next = latest.filter((item) => item.datum !== entryDate);
-        if (next.length === latest.length) {
-          setStatus(`Kein Eintrag vom ${entryDate} gefunden.`, "error");
-          return;
-        }
-
-        const saved = await pushToJsonBin(next);
-        cachedEntries = saved;
-        renderToDom(cachedEntries);
-        setStatus(buildStatusSummary(cachedEntries), "success");
-      } catch (error) {
-        console.error("Fehler beim Löschen", error);
-        setStatus(`Löschen fehlgeschlagen: ${error.message}`, "error");
-      } finally {
-        toggleFormDisabled(false);
-      }
-    }
-
-    function handleEntryAction(event) {
-      const button = event.target.closest('[data-action="delete-entry"]');
-      if (!button) return;
-      const { entryDate } = button.dataset;
-      deleteEntryByDate(entryDate);
-    }
-
     function ensureConfig() {
-      if (!config || !config.binId || !config.masterKey) {
-        setStatus(
-          "Cloud-Konfiguration fehlt oder ist unvollständig. Bitte trage JSONBin-ID und API-Schlüssel in cloud-config.js ein.",
-          "error"
-        );
+      if (!config || !config.supabaseUrl || !config.supabaseKey || !config.table) {
+        setStatus("Cloud-Konfiguration fehlt oder ist unvollständig. Bitte passe cloud-config.js an.", "error");
         toggleFormDisabled(true);
         renderToDom([]);
         return false;
@@ -1047,21 +804,18 @@
         return;
       }
 
+      supabase = createClient(config.supabaseUrl, config.supabaseKey, {
+        auth: { persistSession: false },
+      });
+
       form.addEventListener("submit", handleSubmit);
+      deleteAllBtn.addEventListener("click", handleDeleteAll);
       resetBtn.addEventListener("click", handleReset);
       exportBtn.addEventListener("click", exportCsv);
-      entriesBody.addEventListener("click", handleEntryAction);
-      if (entriesList) {
-        entriesList.addEventListener("click", handleEntryAction);
-      }
 
       setStatus("Cloud verbunden. Einträge werden synchronisiert…", "info");
-
       try {
-        await refreshEntries({ silent: true });
-        setStatus(buildStatusSummary(cachedEntries), "success");
-      } catch (error) {
-        setStatus(`Laden fehlgeschlagen: ${error.message}`, "error");
+        await renderEntries();
       } finally {
         toggleFormDisabled(false);
       }
@@ -1069,6 +823,5 @@
 
     bootstrap();
   </script>
-
 </body>
 </html>
