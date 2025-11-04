@@ -2,42 +2,490 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Medikinet Tagebuch</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Medikinet Tagebuch</title>
   <style>
-    body {font-family: system-ui; background: #f5f7fb; margin: 0; padding: 16px;}
-    .app {max-width: 1100px; margin: 0 auto;}
-    h1 {text-align: center;}
-    .card {background: white; border-radius: 16px; padding: 16px 20px; box-shadow: 0 10px 25px rgba(15,23,42,0.08); margin-bottom: 16px;}
-    table {width: 100%; border-collapse: collapse;}
-    th, td {border: 1px solid #e0e3ef; padding: 6px; text-align: center;}
-    th {background: #eef1ff; font-weight: 600;}
-    select, textarea, input {border: 1px solid #d0d4e4; border-radius: 8px; padding: 6px; font-size: 14px;}
-    .btn {padding: 8px 12px; border-radius: 999px; border: none; background: #4f46e5; color: white; cursor: pointer;}
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --bg: #f5f7fb;
+      --fg: #1f2937;
+      --card: #ffffff;
+      --primary: #4f46e5;
+      --primary-dark: #3b33c4;
+      --border: #e2e7f5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px 64px;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .app {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    header {
+      text-align: center;
+      display: grid;
+      gap: 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2.4vw, 2.8rem);
+    }
+
+    header p {
+      margin: 0;
+      color: #4b5563;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: clamp(16px, 2vw, 28px);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      display: grid;
+      gap: 16px;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    select,
+    input[type="date"],
+    textarea {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      transition: border 0.2s, box-shadow 0.2s;
+      background: #fdfdff;
+    }
+
+    select:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .checkbox-row input {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    button {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+    }
+
+    button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    button.secondary {
+      background: #e5e7ff;
+      color: var(--primary);
+    }
+
+    button.danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #eef1ff;
+      font-weight: 700;
+    }
+
+    tbody tr:hover {
+      background: rgba(79, 70, 229, 0.05);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 16px;
+      color: #6b7280;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--primary);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      .actions {
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="app">
-    <h1>🧾 Medikinet-Tagebuch</h1>
-    <p>Alle Eingaben werden nur lokal im Browser gespeichert.</p>
-    <table>
-      <tr><th>Bereich</th><th>Bewertung</th></tr>
-      <tr><td>Stimmung</td><td><select id='stimmung'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
-      <tr><td>Konzentration Schule</td><td><select id='konz'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
-      <tr><td>Überreizung Vormittag</td><td><select id='vorm'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
-      <tr><td>Überreizung Abend</td><td><select id='abend'><option>😊</option><option>🙂</option><option>😐</option><option>☹️</option><option>😣</option></select></td></tr>
-      <tr><td>Ausbrüche</td><td><input type='checkbox' id='ausbr'/></td></tr>
-      <tr><td>Auffälligkeiten</td><td><textarea id='auff' placeholder='z. B. Kopfweh, Bauchweh...'></textarea></td></tr>
-    </table>
-    <button class='btn' onclick='exportCsv()'>📁 Als CSV exportieren</button>
+    <header>
+      <h1>🧾 Medikinet-Tagebuch</h1>
+      <p>Alle Einträge werden nur lokal im Browser gespeichert. Nutze das Formular, um Beobachtungen rund um die Medikamenteneinnahme festzuhalten.</p>
+    </header>
+
+    <section class="card" aria-labelledby="tagebuch-form">
+      <div class="badge" id="tagebuch-form">Heutiger Eintrag</div>
+      <form id="entry-form">
+        <div class="grid two">
+          <label>
+            Datum
+            <input type="date" id="datum" name="datum" required />
+          </label>
+          <label>
+            Stimmung
+            <select id="stimmung" name="stimmung" required>
+              <option value="😊 Sehr gut">😊 Sehr gut</option>
+              <option value="🙂 Gut">🙂 Gut</option>
+              <option value="😐 Neutral">😐 Neutral</option>
+              <option value="☹️ Schwankend">☹️ Schwankend</option>
+              <option value="😣 Herausfordernd">😣 Herausfordernd</option>
+            </select>
+          </label>
+          <label>
+            Konzentration (Schule)
+            <select id="konz" name="konz" required>
+              <option value="😊 Sehr fokussiert">😊 Sehr fokussiert</option>
+              <option value="🙂 Gut fokussiert">🙂 Gut fokussiert</option>
+              <option value="😐 Mittel">😐 Mittel</option>
+              <option value="☹️ Schwierig">☹️ Schwierig</option>
+              <option value="😣 Kaum möglich">😣 Kaum möglich</option>
+            </select>
+          </label>
+          <label>
+            Überreizung (Vormittag)
+            <select id="vorm" name="vorm" required>
+              <option value="😊 Sehr ruhig">😊 Sehr ruhig</option>
+              <option value="🙂 Gut reguliert">🙂 Gut reguliert</option>
+              <option value="😐 Leicht angespannt">😐 Leicht angespannt</option>
+              <option value="☹️ Deutlich angespannt">☹️ Deutlich angespannt</option>
+              <option value="😣 Stark überreizt">😣 Stark überreizt</option>
+            </select>
+          </label>
+          <label>
+            Überreizung (Abend)
+            <select id="abend" name="abend" required>
+              <option value="😊 Sehr ruhig">😊 Sehr ruhig</option>
+              <option value="🙂 Gut reguliert">🙂 Gut reguliert</option>
+              <option value="😐 Leicht angespannt">😐 Leicht angespannt</option>
+              <option value="☹️ Deutlich angespannt">☹️ Deutlich angespannt</option>
+              <option value="😣 Stark überreizt">😣 Stark überreizt</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="checkbox-row">
+          <input type="checkbox" id="ausbr" name="ausbr" />
+          Auffällige Ausbrüche heute
+        </label>
+
+        <label>
+          Auffälligkeiten & Notizen
+          <textarea id="auff" name="auff" placeholder="z. B. Kopfweh, Bauchweh, Einschlafschwierigkeiten..."></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="button" class="secondary" id="reset-btn">Formular leeren</button>
+          <button type="button" class="danger" id="delete-all-btn">Alle Einträge löschen</button>
+          <button type="submit" class="primary">💾 Eintrag speichern</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="history-title">
+      <div class="badge" id="history-title">Verlauf</div>
+      <div class="actions" style="justify-content: flex-start;">
+        <button type="button" class="secondary" id="export-btn">📁 Verlauf als CSV</button>
+      </div>
+      <div class="table-wrapper">
+        <table aria-live="polite" aria-describedby="history-title">
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Stimmung</th>
+              <th>Konzentration</th>
+              <th>Überreizung (VM)</th>
+              <th>Überreizung (Ab)</th>
+              <th>Ausbrüche</th>
+              <th>Notizen</th>
+            </tr>
+          </thead>
+          <tbody id="entries-body">
+            <tr class="empty-state">
+              <td colspan="7">Noch keine Einträge gespeichert.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
+
   <script>
-    const fields=['stimmung','konz','vorm','abend','ausbr','auff'];
-    function exportCsv(){
-      const data=fields.map(id=>document.getElementById(id).value||document.getElementById(id).checked).join(';');
-      const blob=new Blob([data],{type:'text/csv'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='medikinet.csv';a.click();
+    const storageKey = "medikinetTagebuchEntries";
+    const form = document.getElementById("entry-form");
+    const entriesBody = document.getElementById("entries-body");
+    const deleteAllBtn = document.getElementById("delete-all-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const exportBtn = document.getElementById("export-btn");
+
+    const fields = [
+      "datum",
+      "stimmung",
+      "konz",
+      "vorm",
+      "abend",
+      "ausbr",
+      "auff",
+    ];
+
+    const today = new Date();
+
+    function formatDateInput(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     }
+
+    function setDefaultDate() {
+      const dateInput = document.getElementById("datum");
+      if (!dateInput.value) {
+        dateInput.value = formatDateInput(today);
+      }
+    }
+
+    function readEntries() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        console.error("Konnte Einträge nicht laden", error);
+        return [];
+      }
+    }
+
+    function saveEntries(list) {
+      localStorage.setItem(storageKey, JSON.stringify(list));
+    }
+
+    function renderEntries() {
+      const entries = readEntries();
+      entriesBody.innerHTML = "";
+
+      if (!entries.length) {
+        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="7">Noch keine Einträge gespeichert.</td></tr>`;
+        return;
+      }
+
+      for (const entry of entries) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${entry.datum}</td>
+          <td>${entry.stimmung}</td>
+          <td>${entry.konz}</td>
+          <td>${entry.vorm}</td>
+          <td>${entry.abend}</td>
+          <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
+          <td>${entry.auff ? entry.auff.replace(/\n/g, "<br>") : ""}</td>
+        `;
+        entriesBody.appendChild(row);
+      }
+    }
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const entry = {};
+
+      for (const field of fields) {
+        if (field === "ausbr") {
+          entry[field] = formData.get(field) === "on";
+        } else {
+          entry[field] = (formData.get(field) || "").toString().trim();
+        }
+      }
+
+      const existing = readEntries();
+      const index = existing.findIndex((item) => item.datum === entry.datum);
+
+      if (index >= 0) {
+        existing[index] = entry;
+      } else {
+        existing.push(entry);
+        existing.sort((a, b) => (a.datum < b.datum ? -1 : 1));
+      }
+
+      saveEntries(existing);
+      renderEntries();
+      form.reset();
+      setDefaultDate();
+    }
+
+    function handleDeleteAll() {
+      const confirmDelete = window.confirm("Sollen wirklich alle Einträge gelöscht werden?");
+      if (!confirmDelete) return;
+      localStorage.removeItem(storageKey);
+      renderEntries();
+      form.reset();
+      setDefaultDate();
+    }
+
+    function handleReset() {
+      form.reset();
+      setDefaultDate();
+    }
+
+    function exportCsv() {
+      const entries = readEntries();
+      if (!entries.length) {
+        alert("Es gibt keine Einträge zum Exportieren.");
+        return;
+      }
+
+      const header = [
+        "Datum",
+        "Stimmung",
+        "Konzentration",
+        "Überreizung Vormittag",
+        "Überreizung Abend",
+        "Ausbrüche",
+        "Auffälligkeiten",
+      ];
+
+      const rows = entries.map((entry) => [
+        entry.datum,
+        entry.stimmung,
+        entry.konz,
+        entry.vorm,
+        entry.abend,
+        entry.ausbr ? "Ja" : "Nein",
+        entry.auff?.replace(/\r?\n/g, " ").replace(/"/g, '""') || "",
+      ]);
+
+      const csv = [header, ...rows]
+        .map((cols) =>
+          cols
+            .map((value) => {
+              const stringValue = value.toString();
+              if (/[,";\n]/.test(stringValue)) {
+                return `"${stringValue.replace(/"/g, '""')}"`;
+              }
+              return stringValue;
+            })
+            .join(";")
+        )
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = `medikinet-tagebuch_${formatDateInput(today)}.csv`;
+      downloadLink.click();
+      URL.revokeObjectURL(downloadLink.href);
+    }
+
+    form.addEventListener("submit", handleSubmit);
+    deleteAllBtn.addEventListener("click", handleDeleteAll);
+    resetBtn.addEventListener("click", handleReset);
+    exportBtn.addEventListener("click", exportCsv);
+
+    setDefaultDate();
+    renderEntries();
   </script>
 </body>
 </html>
