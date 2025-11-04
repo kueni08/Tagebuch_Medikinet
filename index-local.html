@@ -161,6 +161,28 @@
       transform: scale(0.98);
     }
 
+    .storage-warning {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .storage-warning svg {
+      flex-shrink: 0;
+    }
+
+    .storage-warning.show {
+      display: flex;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -289,6 +311,12 @@
 
     <section class="card" aria-labelledby="history-title">
       <div class="badge" id="history-title">Verlauf</div>
+      <div class="storage-warning" id="storage-warning" role="status" aria-live="polite" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20" aria-hidden="true">
+          <path fill-rule="evenodd" d="M9.401 1.173a1 1 0 0 1 1.198 0l7.2 5.4A1 1 0 0 1 18 7.4V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.4a1 1 0 0 1 .201-.827l7.2-5.4Zm.599 4.327a1 1 0 0 0-1 1v4.5a1 1 0 1 0 2 0v-4.5a1 1 0 0 0-1-1Zm0 9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z" clip-rule="evenodd" />
+        </svg>
+        <span>Hinweis: Der Browser erlaubt keinen Zugriff auf den lokalen Speicher. Einträge bleiben nur bis zum Schließen der Seite erhalten.</span>
+      </div>
       <div class="actions" style="justify-content: flex-start;">
         <button type="button" class="secondary" id="export-btn">📁 Verlauf als CSV</button>
       </div>
@@ -322,6 +350,7 @@
     const deleteAllBtn = document.getElementById("delete-all-btn");
     const resetBtn = document.getElementById("reset-btn");
     const exportBtn = document.getElementById("export-btn");
+    const storageWarning = document.getElementById("storage-warning");
 
     const fields = [
       "datum",
@@ -334,6 +363,42 @@
     ];
 
     const today = new Date();
+    let storageAvailable = true;
+    let memoryEntries = [];
+
+    function showStorageWarning() {
+      if (storageWarning) {
+        storageWarning.classList.add("show");
+        storageWarning.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function disableStorage(error) {
+      if (storageAvailable && error) {
+        console.error("Lokaler Speicher nicht verfügbar", error);
+      }
+      if (!storageAvailable) return;
+      storageAvailable = false;
+      showStorageWarning();
+    }
+
+    function detectStorageSupport() {
+      if (typeof window === "undefined" || !("localStorage" in window)) {
+        disableStorage(new Error("localStorage wird von diesem Kontext nicht unterstützt."));
+        return false;
+      }
+      try {
+        const testKey = "__medikinet_storage_test__";
+        localStorage.setItem(testKey, "1");
+        localStorage.removeItem(testKey);
+        return true;
+      } catch (error) {
+        disableStorage(error);
+        return false;
+      }
+    }
+
+    storageAvailable = detectStorageSupport();
 
     function formatDateInput(date) {
       const year = date.getFullYear();
@@ -350,17 +415,41 @@
     }
 
     function readEntries() {
+      if (!storageAvailable) {
+        return [...memoryEntries];
+      }
       try {
         const raw = localStorage.getItem(storageKey);
         return raw ? JSON.parse(raw) : [];
       } catch (error) {
-        console.error("Konnte Einträge nicht laden", error);
+        if (error instanceof SyntaxError) {
+          console.warn("Einträge konnten nicht gelesen werden und werden zurückgesetzt.", error);
+          try {
+            localStorage.removeItem(storageKey);
+          } catch (removeError) {
+            disableStorage(removeError);
+            memoryEntries = [];
+            return [];
+          }
+          return [];
+        }
+        disableStorage(error);
+        memoryEntries = [];
         return [];
       }
     }
 
     function saveEntries(list) {
-      localStorage.setItem(storageKey, JSON.stringify(list));
+      if (!storageAvailable) {
+        memoryEntries = [...list];
+        return;
+      }
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(list));
+      } catch (error) {
+        memoryEntries = [...list];
+        disableStorage(error);
+      }
     }
 
     function renderEntries() {
@@ -419,7 +508,16 @@
     function handleDeleteAll() {
       const confirmDelete = window.confirm("Sollen wirklich alle Einträge gelöscht werden?");
       if (!confirmDelete) return;
-      localStorage.removeItem(storageKey);
+      if (!storageAvailable) {
+        memoryEntries = [];
+      } else {
+        try {
+          localStorage.removeItem(storageKey);
+        } catch (error) {
+          memoryEntries = [];
+          disableStorage(error);
+        }
+      }
       renderEntries();
       form.reset();
       setDefaultDate();
