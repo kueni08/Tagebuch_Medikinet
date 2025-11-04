@@ -14,7 +14,6 @@
       --primary: #4f46e5;
       --primary-dark: #3b33c4;
       --border: #e2e7f5;
-      --radius: 20px;
     }
 
     * {
@@ -26,13 +25,11 @@
       padding: 24px 16px 64px;
       background: var(--bg);
       color: var(--fg);
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
     }
 
     .app {
-      width: min(960px, 100%);
+      max-width: 960px;
+      margin: 0 auto;
       display: grid;
       gap: 24px;
     }
@@ -45,18 +42,17 @@
 
     header h1 {
       margin: 0;
-      font-size: clamp(1.9rem, 2.6vw, 2.9rem);
+      font-size: clamp(1.8rem, 2.4vw, 2.8rem);
     }
 
     header p {
       margin: 0;
       color: #4b5563;
-      line-height: 1.5;
     }
 
     .card {
       background: var(--card);
-      border-radius: var(--radius);
+      border-radius: 20px;
       padding: clamp(16px, 2vw, 28px);
       box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
       display: grid;
@@ -129,19 +125,6 @@
       justify-content: flex-end;
     }
 
-    .history-actions {
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-meta {
-      flex: 1;
-      min-width: 200px;
-      color: #4b5563;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
     button {
       padding: 10px 16px;
       border-radius: 999px;
@@ -200,18 +183,10 @@
       display: flex;
     }
 
-    .table-wrapper {
-      border-radius: 16px;
-      overflow-x: auto;
-      background: rgba(79, 70, 229, 0.03);
-      padding: 2px;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.95rem;
-      min-width: 720px;
     }
 
     th,
@@ -234,7 +209,6 @@
       text-align: center;
       padding: 28px 16px;
       color: #6b7280;
-      font-weight: 600;
     }
 
     .badge {
@@ -247,118 +221,15 @@
       padding: 6px 12px;
       font-weight: 600;
       font-size: 0.85rem;
-      width: fit-content;
-    }
-
-    .entries-list {
-      display: none;
-      gap: 12px;
-    }
-
-    .entry-card {
-      border: 1px solid rgba(79, 70, 229, 0.12);
-      border-radius: 16px;
-      padding: 16px;
-      background: white;
-      display: grid;
-      gap: 12px;
-      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-    }
-
-    .entry-card__header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px;
-      font-weight: 700;
-    }
-
-    .entry-card__mood {
-      color: var(--primary);
-    }
-
-    .entry-card dl {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-    }
-
-    .entry-card dl div {
-      display: grid;
-      gap: 4px;
-    }
-
-    .entry-card dt {
-      font-weight: 600;
-      color: #4b5563;
-      font-size: 0.9rem;
-    }
-
-    .entry-card dd {
-      margin: 0;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
-
-    @media (max-width: 900px) {
-      body {
-        padding: 20px 14px 48px;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .grid.two {
-        grid-template-columns: 1fr;
-      }
-
-      .actions {
-        justify-content: center;
-      }
-
-      .actions button {
-        flex: 1 1 200px;
-        justify-content: center;
-      }
-
-      .table-wrapper {
-        display: none;
-      }
-
-      .entries-list {
-        display: grid;
-      }
-
-      .history-meta {
-        text-align: center;
-      }
     }
 
     @media (max-width: 600px) {
       body {
-        padding: 16px 12px 40px;
-      }
-
-      header p {
-        font-size: 0.95rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      header h1 {
-        font-size: 1.75rem;
-      }
-
-      .card {
-        padding: 18px 16px;
-      }
-
-      button {
-        width: 100%;
-        justify-content: center;
+        padding: 16px;
       }
 
       .actions {
-        gap: 10px;
+        justify-content: center;
       }
     }
   </style>
@@ -426,7 +297,7 @@
         </label>
 
         <label>
-          Auffälligkeiten &amp; Notizen
+          Auffälligkeiten & Notizen
           <textarea id="auff" name="auff" placeholder="z. B. Kopfweh, Bauchweh, Einschlafschwierigkeiten..."></textarea>
         </label>
 
@@ -446,11 +317,10 @@
         </svg>
         <span>Hinweis: Der Browser erlaubt keinen Zugriff auf den lokalen Speicher. Einträge bleiben nur bis zum Schließen der Seite erhalten.</span>
       </div>
-      <div class="actions history-actions">
-        <span class="history-meta" id="history-meta" aria-live="polite"></span>
+      <div class="actions" style="justify-content: flex-start;">
         <button type="button" class="secondary" id="export-btn">📁 Verlauf als CSV</button>
       </div>
-      <div class="table-wrapper" aria-hidden="false">
+      <div class="table-wrapper">
         <table aria-live="polite" aria-describedby="history-title">
           <thead>
             <tr>
@@ -463,10 +333,13 @@
               <th>Notizen</th>
             </tr>
           </thead>
-          <tbody id="entries-body"></tbody>
+          <tbody id="entries-body">
+            <tr class="empty-state">
+              <td colspan="7">Noch keine Einträge gespeichert.</td>
+            </tr>
+          </tbody>
         </table>
       </div>
-      <div class="entries-list" id="entries-list" role="list" aria-live="polite" aria-hidden="true"></div>
     </section>
   </div>
 
@@ -474,13 +347,10 @@
     const storageKey = "medikinetTagebuchEntries";
     const form = document.getElementById("entry-form");
     const entriesBody = document.getElementById("entries-body");
-    const entriesList = document.getElementById("entries-list");
-    const historyMeta = document.getElementById("history-meta");
     const deleteAllBtn = document.getElementById("delete-all-btn");
     const resetBtn = document.getElementById("reset-btn");
     const exportBtn = document.getElementById("export-btn");
     const storageWarning = document.getElementById("storage-warning");
-    const tableWrapper = document.querySelector(".table-wrapper");
 
     const fields = [
       "datum",
@@ -544,17 +414,6 @@
       }
     }
 
-    function updateHistoryMeta(entries) {
-      if (!historyMeta) return;
-      if (!entries.length) {
-        historyMeta.textContent = "Noch keine Einträge";
-        return;
-      }
-      const first = entries[0]?.datum;
-      const last = entries[entries.length - 1]?.datum;
-      historyMeta.textContent = `Synchronisiert: ${entries.length} Einträge (${first} bis ${last})`;
-    }
-
     function readEntries() {
       if (!storageAvailable) {
         return [...memoryEntries];
@@ -588,24 +447,17 @@
       try {
         localStorage.setItem(storageKey, JSON.stringify(list));
       } catch (error) {
-        disableStorage(error);
         memoryEntries = [...list];
+        disableStorage(error);
       }
     }
 
     function renderEntries() {
       const entries = readEntries();
       entriesBody.innerHTML = "";
-      if (entriesList) {
-        entriesList.innerHTML = "";
-      }
 
       if (!entries.length) {
         entriesBody.innerHTML = `<tr class="empty-state"><td colspan="7">Noch keine Einträge gespeichert.</td></tr>`;
-        if (entriesList) {
-          entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
-        }
-        updateHistoryMeta(entries);
         return;
       }
 
@@ -621,45 +473,7 @@
           <td>${entry.auff ? entry.auff.replace(/\n/g, "<br>") : ""}</td>
         `;
         entriesBody.appendChild(row);
-
-        if (entriesList) {
-          const card = document.createElement("article");
-          card.className = "entry-card";
-          card.setAttribute("role", "listitem");
-          const notes = entry.auff ? entry.auff.replace(/\n/g, "<br>") : "Keine Notizen";
-          card.innerHTML = `
-            <div class="entry-card__header">
-              <span class="entry-card__date">${entry.datum}</span>
-              <span class="entry-card__mood">${entry.stimmung}</span>
-            </div>
-            <dl>
-              <div>
-                <dt>Konzentration</dt>
-                <dd>${entry.konz}</dd>
-              </div>
-              <div>
-                <dt>Überreizung (Vormittag)</dt>
-                <dd>${entry.vorm}</dd>
-              </div>
-              <div>
-                <dt>Überreizung (Abend)</dt>
-                <dd>${entry.abend}</dd>
-              </div>
-              <div>
-                <dt>Ausbrüche</dt>
-                <dd>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</dd>
-              </div>
-              <div>
-                <dt>Notizen</dt>
-                <dd>${notes}</dd>
-              </div>
-            </dl>
-          `;
-          entriesList.appendChild(card);
-        }
       }
-
-      updateHistoryMeta(entries);
     }
 
     function handleSubmit(event) {
@@ -763,24 +577,6 @@
       URL.revokeObjectURL(downloadLink.href);
     }
 
-    const mobileQuery = window.matchMedia("(max-width: 720px)");
-
-    function syncHistoryView() {
-      const hideTable = mobileQuery.matches;
-      if (tableWrapper) {
-        tableWrapper.setAttribute("aria-hidden", hideTable ? "true" : "false");
-      }
-      if (entriesList) {
-        entriesList.setAttribute("aria-hidden", hideTable ? "false" : "true");
-      }
-    }
-
-    if (mobileQuery.addEventListener) {
-      mobileQuery.addEventListener("change", syncHistoryView);
-    } else if (mobileQuery.addListener) {
-      mobileQuery.addListener(syncHistoryView);
-    }
-
     form.addEventListener("submit", handleSubmit);
     deleteAllBtn.addEventListener("click", handleDeleteAll);
     resetBtn.addEventListener("click", handleReset);
@@ -788,7 +584,6 @@
 
     setDefaultDate();
     renderEntries();
-    syncHistoryView();
   </script>
 </body>
 </html>
