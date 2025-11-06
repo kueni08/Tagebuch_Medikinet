@@ -235,18 +235,6 @@
       color: var(--primary);
     }
 
-    button.ghost {
-      background: transparent;
-      color: var(--primary);
-      padding-left: 0;
-      padding-right: 0;
-      box-shadow: none;
-    }
-
-    button.ghost:hover {
-      text-decoration: underline;
-    }
-
     button.danger {
       background: #fee2e2;
       color: #b91c1c;
@@ -334,26 +322,6 @@
       font-size: 0.92rem;
       color: #6b7280;
       line-height: 1.5;
-    }
-
-    .config-toggle {
-      display: grid;
-      gap: 12px;
-      margin-top: 16px;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px dashed rgba(79, 70, 229, 0.4);
-      background: rgba(79, 70, 229, 0.08);
-    }
-
-    .config-toggle p {
-      margin: 0;
-      color: #4b5563;
-      font-size: 0.95rem;
-    }
-
-    #cloud-config-wrapper[hidden] {
-      display: none;
     }
 
     .status {
@@ -555,58 +523,49 @@
         <span>• Beim Speichern wird ein vorhandener Tag mit gleichem Datum überschrieben; jeder Eintrag lässt sich einzeln löschen.</span>
       </div>
       <div class="config-source" id="config-source-info"></div>
-      <div class="config-toggle" id="cloud-config-toggle" hidden>
-        <p id="cloud-config-toggle-summary">
-          Deine JSONBin-Zugangsdaten sind gespeichert. Du kannst sie bei Bedarf über den Button erneut einblenden.
-        </p>
-        <button type="button" class="secondary" id="cloud-config-reveal-btn">Cloud-Zugangsdaten anzeigen</button>
-      </div>
-      <div id="cloud-config-wrapper">
-        <form class="config-form" id="cloud-config-form" autocomplete="off">
-          <div class="config-fields three">
-            <label class="field" for="config-bin-id">
-              JSONBin ID
-              <input
-                type="text"
-                id="config-bin-id"
-                name="config-bin-id"
-                inputmode="text"
-                spellcheck="false"
-                autocomplete="off"
-                placeholder="z. B. 64f3a6e1baf603…"
-                required
-              />
-            </label>
-            <label class="field" for="config-master-key">
-              Master Key
-              <input
-                type="password"
-                id="config-master-key"
-                name="config-master-key"
-                autocomplete="off"
-                placeholder="beginnt meist mit $2b$…"
-                required
-              />
-            </label>
-            <label class="field" for="config-access-key">
-              Access Key (optional)
-              <input
-                type="password"
-                id="config-access-key"
-                name="config-access-key"
-                autocomplete="off"
-                placeholder="nur falls vergeben"
-              />
-            </label>
-          </div>
-          <div class="config-actions">
-            <button type="submit" class="primary">Zugangsdaten speichern</button>
-            <button type="button" class="secondary" id="config-clear-btn">Gespeicherte Daten löschen</button>
-            <button type="button" class="ghost" id="config-hide-btn" hidden>Fenster ausblenden</button>
-          </div>
-          <p class="config-note" id="config-storage-note">Hinweis: Die Zugangsdaten werden ausschließlich lokal im Browser gespeichert.</p>
-        </form>
-      </div>
+      <form class="config-form" id="cloud-config-form" autocomplete="off">
+        <div class="config-fields three">
+          <label class="field" for="config-bin-id">
+            JSONBin ID
+            <input
+              type="text"
+              id="config-bin-id"
+              name="config-bin-id"
+              inputmode="text"
+              spellcheck="false"
+              autocomplete="off"
+              placeholder="z. B. 64f3a6e1baf603…"
+              required
+            />
+          </label>
+          <label class="field" for="config-master-key">
+            Master Key
+            <input
+              type="password"
+              id="config-master-key"
+              name="config-master-key"
+              autocomplete="off"
+              placeholder="beginnt meist mit $2b$…"
+              required
+            />
+          </label>
+          <label class="field" for="config-access-key">
+            Access Key (optional)
+            <input
+              type="password"
+              id="config-access-key"
+              name="config-access-key"
+              autocomplete="off"
+              placeholder="nur falls vergeben"
+            />
+          </label>
+        </div>
+        <div class="config-actions">
+          <button type="submit" class="primary">Zugangsdaten speichern</button>
+          <button type="button" class="secondary" id="config-clear-btn">Gespeicherte Daten löschen</button>
+        </div>
+        <p class="config-note" id="config-storage-note">Hinweis: Die Zugangsdaten werden ausschließlich lokal im Browser gespeichert.</p>
+      </form>
       <div class="status" id="cloud-status" role="status" aria-live="polite" data-tone="info">Bitte Zugangsdaten eintragen.</div>
     </section>
 
@@ -656,16 +615,6 @@
               <option value="😐 Leicht angespannt">😐 Leicht angespannt</option>
               <option value="☹️ Deutlich angespannt">☹️ Deutlich angespannt</option>
               <option value="😣 Stark überreizt">😣 Stark überreizt</option>
-            </select>
-          </label>
-          <label>
-            Appetit
-            <select id="appetit" name="appetit" required>
-              <option value="🐭 Kaum Hunger">🐭 Kaum Hunger</option>
-              <option value="🐰 Wenig Hunger">🐰 Wenig Hunger</option>
-              <option value="🐱 Normaler Hunger">🐱 Normaler Hunger</option>
-              <option value="🦊 Großer Hunger">🦊 Großer Hunger</option>
-              <option value="🐻 Bärenhunger">🐻 Bärenhunger</option>
             </select>
           </label>
         </div>
@@ -719,7 +668,6 @@
               <th>Konzentration</th>
               <th>Überreizung (VM)</th>
               <th>Überreizung (Ab)</th>
-              <th>Appetit</th>
               <th>Ausbrüche</th>
               <th>Nebenwirkungen</th>
               <th>Notizen</th>
@@ -748,11 +696,6 @@
     const configSourceInfo = document.getElementById("config-source-info");
     const configClearBtn = document.getElementById("config-clear-btn");
     const configStorageNote = document.getElementById("config-storage-note");
-    const configFormWrapper = document.getElementById("cloud-config-wrapper");
-    const configToggle = document.getElementById("cloud-config-toggle");
-    const configToggleSummary = document.getElementById("cloud-config-toggle-summary");
-    const configRevealBtn = document.getElementById("cloud-config-reveal-btn");
-    const configHideBtn = document.getElementById("config-hide-btn");
     const configInputs = {
       binId: document.getElementById("config-bin-id"),
       masterKey: document.getElementById("config-master-key"),
@@ -765,7 +708,6 @@
       "konz",
       "vorm",
       "abend",
-      "appetit",
       "ausbr",
       "kopfweh",
       "bauchweh",
@@ -941,48 +883,6 @@
       configSourceInfo.textContent = message;
     }
 
-    function setConfigFormVisibility(visible) {
-      if (configFormWrapper) {
-        configFormWrapper.hidden = !visible;
-      }
-      if (configToggle) {
-        configToggle.hidden = visible;
-      }
-    }
-
-    function updateConfigToggleSummary(message) {
-      if (!configToggleSummary) return;
-      configToggleSummary.textContent = message;
-    }
-
-    function getConfigToggleMessage() {
-      if (configOrigin === "browser") {
-        return "Zugangsdaten sind lokal gespeichert. Du kannst sie bei Bedarf einblenden.";
-      }
-      if (configOrigin === "external") {
-        return "Zugangsdaten stammen aus cloud-config.js. Du kannst sie bei Bedarf überschreiben.";
-      }
-      return "Trage deine JSONBin-Zugangsdaten ein, um die Cloud-Synchronisation zu aktivieren.";
-    }
-
-    function updateConfigHideAvailability() {
-      const canHide = configOrigin === "browser" || configOrigin === "external";
-      if (configHideBtn) {
-        configHideBtn.hidden = !canHide;
-      }
-      if (!canHide) {
-        setConfigFormVisibility(true);
-      }
-      updateConfigToggleSummary(getConfigToggleMessage());
-    }
-
-    function hideConfigFormIfAllowed(message) {
-      const canHide = configOrigin === "browser" || configOrigin === "external";
-      if (!canHide) return;
-      updateConfigToggleSummary(message || getConfigToggleMessage());
-      setConfigFormVisibility(false);
-    }
-
     function fillConfigForm(value) {
       if (!configForm) return;
       configInputs.binId.value = value?.binId || "";
@@ -1079,7 +979,6 @@
         konz: entry.konz ?? "",
         vorm: entry.vorm ?? "",
         abend: entry.abend ?? "",
-        appetit: entry.appetit ?? "",
         ausbr: Boolean(entry.ausbr),
         kopfweh: Boolean(entry.kopfweh),
         bauchweh: Boolean(entry.bauchweh),
@@ -1161,7 +1060,7 @@
       }
 
       if (!entries.length) {
-        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="10">Noch keine Einträge gespeichert.</td></tr>`;
+        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="9">Noch keine Einträge gespeichert.</td></tr>`;
         if (entriesList) {
           entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
         }
@@ -1179,7 +1078,6 @@
           <td>${entry.konz}</td>
           <td>${entry.vorm}</td>
           <td>${entry.abend}</td>
-          <td>${entry.appetit || ""}</td>
           <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
           <td>${formatSideEffectsText(entry)}</td>
           <td>${notesHtml}</td>
@@ -1210,10 +1108,6 @@
               <div>
                 <dt>Überreizung (Abend)</dt>
                 <dd>${entry.abend}</dd>
-              </div>
-              <div>
-                <dt>Appetit</dt>
-                <dd>${entry.appetit || "Keine Angabe"}</dd>
               </div>
               <div>
                 <dt>Ausbrüche</dt>
@@ -1457,7 +1351,6 @@
         "Konzentration",
         "Überreizung Vormittag",
         "Überreizung Abend",
-        "Appetit",
         "Ausbrüche",
         "Kopfweh",
         "Bauchweh",
@@ -1471,12 +1364,13 @@
         entry.konz,
         entry.vorm,
         entry.abend,
-        entry.appetit || "",
         entry.ausbr ? "Ja" : "Nein",
         entry.kopfweh ? "Ja" : "Nein",
         entry.bauchweh ? "Ja" : "Nein",
         entry.schwindel ? "Ja" : "Nein",
-        (entry.auff || "").replace(/\r?\n/g, " "),
+        entry.auff?.replace(/
+?
+/g, " ").replace(/"/g, '""') || "",
       ]);
 
       const csv = [header, ...rows]
@@ -1484,19 +1378,21 @@
           cols
             .map((value) => {
               const stringValue = value.toString();
-              if (/[,";]/.test(stringValue)) {
-                return '"' + stringValue.replace(/\"/g, '\"\"') + '"';
+              if (/[,";
+]/.test(stringValue)) {
+                return `"${stringValue.replace(/"/g, '""')}"`;
               }
               return stringValue;
             })
             .join(";")
         )
-        .join("\n");
+        .join("
+");
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const downloadLink = document.createElement("a");
       downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = "medikinet-tagebuch_" + formatDateInput(today) + ".csv";
+      downloadLink.download = `medikinet-tagebuch_${formatDateInput(today)}.csv`;
       downloadLink.click();
       URL.revokeObjectURL(downloadLink.href);
     }
@@ -1549,17 +1445,17 @@
         setStatus("Bitte gültige JSONBin-ID und Master-Key eingeben.", "error");
         return;
       }
-      updateConfigHideAvailability();
       if (storageAvailable) {
         updateConfigSource("Konfiguration im Browser gespeichert.");
-        hideConfigFormIfAllowed("Konfiguration im Browser gespeichert. Du kannst sie bei Bedarf einblenden.");
       } else {
         updateConfigSource("Konfiguration aktiv (wird nicht dauerhaft gespeichert).");
         if (configStorageNote) {
           configStorageNote.textContent =
             "Lokaler Speicher ist nicht verfügbar. Die Zugangsdaten bleiben nur bis zum Schließen der Seite erhalten.";
         }
-        setConfigFormVisibility(true);
+      }
+      if (configForm) {
+        configForm.hidden = false;
       }
       startDiary({ fromConfigChange: true });
     }
@@ -1573,8 +1469,9 @@
       lastSyncedAt = null;
       fillConfigForm({ binId: "", masterKey: "", accessKey: "" });
       updateConfigSource("Keine JSONBin-Zugangsdaten gespeichert.");
-      updateConfigHideAvailability();
-      setConfigFormVisibility(true);
+      if (configForm) {
+        configForm.hidden = false;
+      }
       startDiary({ fromConfigChange: true });
     }
 
@@ -1612,26 +1509,12 @@
       if (configClearBtn) {
         configClearBtn.addEventListener("click", handleConfigClear);
       }
-      if (configRevealBtn) {
-        configRevealBtn.addEventListener("click", () => {
-          setConfigFormVisibility(true);
-          updateConfigToggleSummary(getConfigToggleMessage());
-          if (configInputs.binId) {
-            configInputs.binId.focus();
-          }
-        });
-      }
-      if (configHideBtn) {
-        configHideBtn.addEventListener("click", () => {
-          hideConfigFormIfAllowed();
-        });
-      }
-
-      updateConfigHideAvailability();
 
       if (configOrigin === "external" && config) {
         fillConfigForm(config);
-        hideConfigFormIfAllowed("Konfiguration aus cloud-config.js geladen. Du kannst sie bei Bedarf einblenden.");
+        if (configForm) {
+          configForm.hidden = true;
+        }
         updateConfigSource("Konfiguration aus cloud-config.js geladen.");
         startDiary();
         return;
@@ -1639,7 +1522,6 @@
 
       if (configOrigin === "browser" && config) {
         fillConfigForm(config);
-        hideConfigFormIfAllowed("Konfiguration aus dem Browser geladen. Du kannst sie bei Bedarf einblenden.");
         updateConfigSource("Konfiguration aus dem Browser geladen.");
         startDiary();
         return;
@@ -1652,7 +1534,6 @@
 
       fillConfigForm({ binId: "", masterKey: "", accessKey: "" });
       updateConfigSource("Noch keine Zugangsdaten gespeichert.");
-      setConfigFormVisibility(true);
       startDiary();
     }
 
