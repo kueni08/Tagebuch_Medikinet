@@ -183,45 +183,8 @@
       padding: 4px 0;
     }
 
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: rgba(79, 70, 229, 0.12);
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
     .muted {
       color: #6b7280;
-    }
-
-    .table-action {
-      background: transparent;
-      border: 1px solid rgba(79, 70, 229, 0.3);
-      color: var(--primary);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .table-action:hover {
-      background: rgba(79, 70, 229, 0.08);
-    }
-
-    .entry-card .table-action {
-      justify-self: start;
     }
 
     .actions {
@@ -229,19 +192,6 @@
       flex-wrap: wrap;
       gap: 12px;
       justify-content: flex-end;
-    }
-
-    .history-actions {
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .history-meta {
-      flex: 1;
-      min-width: 200px;
-      color: #4b5563;
-      font-size: 0.9rem;
-      font-weight: 600;
     }
 
     button {
@@ -401,10 +351,6 @@
       font-size: 0.95rem;
     }
 
-    #cloud-config-wrapper[hidden] {
-      display: none;
-    }
-
     .status {
       display: flex;
       align-items: center;
@@ -435,93 +381,6 @@
       color: #92400e;
     }
 
-    .table-wrapper {
-      border-radius: 16px;
-      overflow-x: auto;
-      background: rgba(79, 70, 229, 0.03);
-      padding: 2px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-      min-width: 720px;
-    }
-
-    th,
-    td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-
-    th {
-      background: #eef1ff;
-      font-weight: 700;
-    }
-
-    tbody tr:hover {
-      background: rgba(79, 70, 229, 0.05);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 28px 16px;
-      color: #6b7280;
-      font-weight: 600;
-    }
-
-    .entries-list {
-      display: none;
-      gap: 12px;
-    }
-
-    .entry-card {
-      border: 1px solid rgba(79, 70, 229, 0.12);
-      border-radius: 16px;
-      padding: 16px;
-      background: white;
-      display: grid;
-      gap: 12px;
-      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-    }
-
-    .entry-card__header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px;
-      font-weight: 700;
-    }
-
-    .entry-card__mood {
-      color: var(--primary);
-    }
-
-    .entry-card dl {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-    }
-
-    .entry-card dl div {
-      display: grid;
-      gap: 4px;
-    }
-
-    .entry-card dt {
-      font-weight: 600;
-      color: #4b5563;
-      font-size: 0.9rem;
-    }
-
-    .entry-card dd {
-      margin: 0;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
-
     @media (max-width: 900px) {
       body {
         padding: 20px 14px 48px;
@@ -548,18 +407,6 @@
       .actions button {
         flex: 1 1 200px;
         justify-content: center;
-      }
-
-      .table-wrapper {
-        display: none;
-      }
-
-      .entries-list {
-        display: grid;
-      }
-
-      .history-meta {
-        text-align: center;
       }
     }
 
@@ -606,73 +453,8 @@
     </nav>
     <header>
       <h1>☁️ Medikinet-Tagebuch</h1>
-      <p>Speichert deine Einträge bevorzugt in einem JSONBin und legt automatisch eine lokale Sicherung an.</p>
-      <p class="muted">Ohne Zugangsdaten arbeitet das Tagebuch vollständig offline.</p>
+      <p class="muted">Kurze Notizen für Stimmung, Fokus und Beobachtungen – optimiert für unterwegs.</p>
     </header>
-
-    <section class="card" aria-labelledby="cloud-info">
-      <div class="badge" id="cloud-info">Cloud-Speicher</div>
-      <div class="info-banner">
-        <strong>Schnellstart</strong>
-        <span>Trage deine JSONBin-Zugangsdaten unten ein – sie bleiben ausschließlich lokal im Browser gespeichert.</span>
-        <span>Fällt die Cloud aus, arbeitet das Tagebuch automatisch mit der lokalen Sicherung weiter.</span>
-        <a class="info-link" href="cloud-guide.html">Ausführliche Cloud-Anleitung öffnen</a>
-      </div>
-      <div class="config-source" id="config-source-info"></div>
-      <div class="config-toggle" id="cloud-config-toggle" hidden>
-        <p id="cloud-config-toggle-summary">
-          Deine JSONBin-Zugangsdaten sind gespeichert. Du kannst sie bei Bedarf über den Button erneut einblenden.
-        </p>
-        <button type="button" class="secondary" id="cloud-config-reveal-btn">Cloud-Zugangsdaten anzeigen</button>
-      </div>
-      <div id="cloud-config-wrapper">
-        <form class="config-form" id="cloud-config-form" autocomplete="off">
-          <div class="config-fields three">
-            <label class="field" for="config-bin-id">
-              JSONBin ID
-              <input
-                type="text"
-                id="config-bin-id"
-                name="config-bin-id"
-                inputmode="text"
-                spellcheck="false"
-                autocomplete="off"
-                placeholder="z. B. 64f3a6e1baf603…"
-                required
-              />
-            </label>
-            <label class="field" for="config-master-key">
-              Master Key
-              <input
-                type="password"
-                id="config-master-key"
-                name="config-master-key"
-                autocomplete="off"
-                placeholder="beginnt meist mit $2b$…"
-                required
-              />
-            </label>
-            <label class="field" for="config-access-key">
-              Access Key (optional)
-              <input
-                type="password"
-                id="config-access-key"
-                name="config-access-key"
-                autocomplete="off"
-                placeholder="nur falls vergeben"
-              />
-            </label>
-          </div>
-          <div class="config-actions">
-            <button type="submit" class="primary">Zugangsdaten speichern</button>
-            <button type="button" class="secondary" id="config-clear-btn">Gespeicherte Daten löschen</button>
-            <button type="button" class="ghost" id="config-hide-btn" hidden>Fenster ausblenden</button>
-          </div>
-          <p class="config-note" id="config-storage-note">Hinweis: Die Zugangsdaten werden ausschließlich lokal im Browser gespeichert.</p>
-        </form>
-      </div>
-      <div class="status" id="cloud-status" role="status" aria-live="polite" data-tone="info">Bitte Zugangsdaten eintragen.</div>
-    </section>
 
     <section class="card" aria-labelledby="tagebuch-form">
       <div class="badge" id="tagebuch-form">Heutiger Eintrag</div>
@@ -765,63 +547,26 @@
           <button type="button" class="secondary" id="reset-btn">Formular leeren</button>
           <button type="submit" class="primary">☁️ Eintrag speichern</button>
         </div>
+        <div class="status" id="cloud-status" role="status" aria-live="polite" data-tone="info">Bereit für neue Einträge.</div>
       </form>
-    </section>
-
-    <section class="card" aria-labelledby="history-title">
-      <div class="badge" id="history-title">Verlauf</div>
-      <div class="actions history-actions">
-        <span class="history-meta" id="history-meta" aria-live="polite"></span>
-        <button type="button" class="secondary" id="export-btn">📁 Verlauf als CSV</button>
-      </div>
-      <div class="table-wrapper" aria-hidden="false">
-        <table aria-live="polite" aria-describedby="history-title">
-          <thead>
-            <tr>
-              <th>Datum</th>
-              <th>Stimmung</th>
-              <th>Konzentration</th>
-              <th>Überreizung (VM)</th>
-              <th>Überreizung (Ab)</th>
-              <th>Appetit</th>
-              <th>Ausbrüche</th>
-              <th>Nebenwirkungen</th>
-              <th>Notizen</th>
-              <th>Aktion</th>
-            </tr>
-          </thead>
-          <tbody id="entries-body"></tbody>
-        </table>
-      </div>
-      <div class="entries-list" id="entries-list" role="list" aria-live="polite" aria-hidden="true"></div>
     </section>
   </div>
 
     <script type="module">
-    const API_BASE = "https://api.jsonbin.io/v3/b";
+    import {
+      detectStorageSupport,
+      getActiveConfig,
+      readLocalEntries,
+      writeLocalEntries,
+      fetchEntriesFromJsonBin,
+      pushEntriesToJsonBin,
+      sortByDate,
+      normalizeEntry,
+    } from "./js/data-access.mjs";
 
     const form = document.getElementById("entry-form");
-    const entriesBody = document.getElementById("entries-body");
-    const entriesList = document.getElementById("entries-list");
-    const historyMeta = document.getElementById("history-meta");
     const resetBtn = document.getElementById("reset-btn");
-    const exportBtn = document.getElementById("export-btn");
-    const cloudStatus = document.getElementById("cloud-status");
-    const tableWrapper = document.querySelector(".table-wrapper");
-    const configForm = document.getElementById("cloud-config-form");
-    const configSourceInfo = document.getElementById("config-source-info");
-    const configClearBtn = document.getElementById("config-clear-btn");
-    const configStorageNote = document.getElementById("config-storage-note");
-    const configFormWrapper = document.getElementById("cloud-config-wrapper");
-    const configToggle = document.getElementById("cloud-config-toggle");
-    const configToggleSummary = document.getElementById("cloud-config-toggle-summary");
-    const configRevealBtn = document.getElementById("cloud-config-reveal-btn");
-    const configHideBtn = document.getElementById("config-hide-btn");
-    const configInputs = {
-      binId: document.getElementById("config-bin-id"),
-      masterKey: document.getElementById("config-master-key"),
-      accessKey: document.getElementById("config-access-key"),
-    };
+    const statusEl = document.getElementById("cloud-status");
 
     const fields = [
       "datum",
@@ -840,41 +585,19 @@
     const booleanFields = new Set(["ausbr", "kopfweh", "bauchweh", "schwindel"]);
 
     const today = new Date();
-    const STORAGE_KEYS = {
-      config: "medikinetJsonBinConfig",
-      entries: "medikinetDiaryEntries",
-    };
-
-    const mobileQuery = window.matchMedia("(max-width: 720px)");
+    const storageAvailable = detectStorageSupport();
 
     let cachedEntries = [];
     let eventsBound = false;
-    let storageMode = "local";
-    let lastSyncedAt = null;
-    let lastLocalSaveAt = null;
-    let configOrigin = null;
+    let storageMode = storageAvailable ? "local" : "memory";
 
-    const storageAvailable = detectStorageSupport();
+    const { config: initialConfig } = getActiveConfig();
+    let config = initialConfig;
 
-    const externalConfig = normalizeConfig(
-      typeof window !== "undefined" && "MEDIKINET_CLOUD_CONFIG" in window
-        ? window.MEDIKINET_CLOUD_CONFIG
-        : undefined
-    );
-
-    let config = externalConfig || null;
-    if (config) {
-      configOrigin = "external";
-      storageMode = "cloud";
-    }
-
-    if (!config && storageAvailable) {
-      const stored = readStoredConfig();
-      if (stored) {
-        config = stored;
-        configOrigin = "browser";
-        storageMode = "cloud";
-      }
+    function setStatus(message, tone = "info") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.setAttribute("data-tone", tone);
     }
 
     function formatDateInput(date) {
@@ -891,197 +614,111 @@
       }
     }
 
-    function detectStorageSupport() {
-      if (typeof window === "undefined" || !("localStorage" in window)) {
-        return false;
-      }
-      try {
-        const testKey = "__medikinet_config_test__";
-        localStorage.setItem(testKey, "1");
-        localStorage.removeItem(testKey);
-        return true;
-      } catch (error) {
-        console.warn("Lokaler Speicher nicht verfügbar", error);
-        return false;
-      }
+    function readEntriesFromLocal() {
+      const { entries } = readLocalEntries();
+      return entries;
     }
 
-    function normalizeConfig(value) {
-      if (!value) return null;
-      const binId = typeof value.binId === "string" ? value.binId.trim() : "";
-      const masterKey = typeof value.masterKey === "string" ? value.masterKey.trim() : "";
-      const accessKey = typeof value.accessKey === "string" ? value.accessKey.trim() : "";
-      if (!binId || !masterKey) {
-        return null;
-      }
-      const result = { binId, masterKey };
-      if (accessKey) {
-        result.accessKey = accessKey;
-      }
-      return result;
-    }
-
-    function readStoredConfig() {
-      if (!storageAvailable) return null;
-      try {
-        const raw = localStorage.getItem(STORAGE_KEYS.config);
-        if (!raw) return null;
-        return normalizeConfig(JSON.parse(raw));
-      } catch (error) {
-        console.warn("Gespeicherte Cloud-Konfiguration konnte nicht gelesen werden", error);
-        return null;
-      }
-    }
-
-    function writeStoredConfig(value) {
-      if (!storageAvailable) return;
-      try {
-        localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(value));
-      } catch (error) {
-        console.warn("Cloud-Konfiguration konnte nicht gespeichert werden", error);
-      }
-    }
-
-    function clearStoredConfig() {
-      if (!storageAvailable) return;
-      try {
-        localStorage.removeItem(STORAGE_KEYS.config);
-      } catch (error) {
-        console.warn("Cloud-Konfiguration konnte nicht entfernt werden", error);
-      }
-    }
-
-    function readLocalEntries() {
+    function writeEntriesLocally(entries, updatedAt = new Date().toISOString()) {
       if (!storageAvailable) {
-        return cachedEntries.map(normalizeEntry);
-      }
-      try {
-        const raw = localStorage.getItem(STORAGE_KEYS.entries);
-        if (!raw) {
-          lastLocalSaveAt = null;
-          return [];
-        }
-        const payload = JSON.parse(raw);
-        if (Array.isArray(payload)) {
-          lastLocalSaveAt = null;
-          return payload.map(normalizeEntry).sort(sortByDate);
-        }
-        if (payload && Array.isArray(payload.entries)) {
-          lastLocalSaveAt = payload.updatedAt || null;
-          return payload.entries.map(normalizeEntry).sort(sortByDate);
-        }
-      } catch (error) {
-        console.warn("Lokale Einträge konnten nicht gelesen werden", error);
-      }
-      return [];
-    }
-
-    function writeLocalEntries(entries) {
-      if (!storageAvailable) {
-        cachedEntries = entries.map(normalizeEntry);
-        lastLocalSaveAt = new Date().toISOString();
         return;
       }
+      writeLocalEntries(entries, updatedAt);
+    }
+
+    function normalizeAndSortEntries(entries) {
+      return sortByDate(entries.map(normalizeEntry));
+    }
+
+    async function loadEntriesFromPreferredSource({ showStatus = true } = {}) {
+      if (!config) {
+        storageMode = storageAvailable ? "local" : "memory";
+        const entries = readEntriesFromLocal();
+        cachedEntries = entries;
+        if (showStatus) {
+          if (storageAvailable) {
+            setStatus("Bereit für neue Einträge.", "info");
+          } else {
+            setStatus("Temporäre Sicherung aktiv. Bitte zeitnah exportieren.", "warning");
+          }
+        }
+        return entries;
+      }
+
+      if (showStatus) {
+        setStatus("Synchronisiere…", "info");
+      }
+
       try {
-        const payload = {
-          entries,
-          updatedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(STORAGE_KEYS.entries, JSON.stringify(payload));
-        lastLocalSaveAt = payload.updatedAt;
+        const { entries, updatedAt } = await fetchEntriesFromJsonBin(config);
+        storageMode = "cloud";
+        cachedEntries = entries;
+        writeEntriesLocally(entries, updatedAt);
+        if (showStatus) {
+          setStatus("Bereit für neue Einträge.", "success");
+        }
+        return entries;
       } catch (error) {
-        console.warn("Lokale Sicherung konnte nicht gespeichert werden", error);
+        console.warn("Fehler beim Laden", error);
+        storageMode = storageAvailable ? "local" : "memory";
+        const entries = readEntriesFromLocal();
+        cachedEntries = entries;
+        if (showStatus) {
+          const tone = storageAvailable ? "warning" : "error";
+          const message = storageAvailable
+            ? "Synchronisierung derzeit nicht möglich. Einträge werden weiterhin gesichert."
+            : "Synchronisierung derzeit nicht möglich. Einträge können nur temporär gesichert werden.";
+          setStatus(message, tone);
+        }
+        return entries;
       }
     }
 
-    function setStatus(message, tone = "info") {
-      if (!cloudStatus) return;
-      cloudStatus.textContent = message;
-      cloudStatus.setAttribute("data-tone", tone);
+    async function getEntriesForWrite() {
+      if (cachedEntries.length) {
+        return cachedEntries;
+      }
+      return loadEntriesFromPreferredSource({ showStatus: false });
     }
 
-    function updateConfigSource(message) {
-      if (!configSourceInfo) return;
-      configSourceInfo.textContent = message;
-    }
-
-    function setConfigFormVisibility(visible) {
-      if (configFormWrapper) {
-        configFormWrapper.hidden = !visible;
+    async function persistEntries(entries) {
+      const normalized = normalizeAndSortEntries(entries);
+      if (!config) {
+        storageMode = storageAvailable ? "local" : "memory";
+        cachedEntries = normalized;
+        if (storageAvailable) {
+          writeEntriesLocally(normalized, new Date().toISOString());
+          setStatus("Eintrag gespeichert.", "success");
+        } else {
+          setStatus(
+            "Eintrag gespeichert. Bitte Gerät geöffnet lassen, die Daten sind nur temporär gesichert.",
+            "warning"
+          );
+        }
+        return normalized;
       }
-      if (configToggle) {
-        configToggle.hidden = visible;
+      try {
+        const { entries: saved, updatedAt } = await pushEntriesToJsonBin(config, normalized);
+        storageMode = "cloud";
+        cachedEntries = saved;
+        writeEntriesLocally(saved, updatedAt);
+        setStatus("Eintrag gespeichert.", "success");
+        return saved;
+      } catch (error) {
+        console.error("Fehler beim Speichern", error);
+        storageMode = storageAvailable ? "local" : "memory";
+        cachedEntries = normalized;
+        if (storageAvailable) {
+          writeEntriesLocally(normalized, new Date().toISOString());
+          setStatus("Eintrag gespeichert. Synchronisierung erfolgt automatisch, sobald verfügbar.", "warning");
+        } else {
+          setStatus(
+            "Speichern nicht möglich: Synchronisierung fehlgeschlagen und keine lokale Sicherung verfügbar.",
+            "error"
+          );
+        }
+        return normalized;
       }
-    }
-
-    function updateConfigToggleSummary(message) {
-      if (!configToggleSummary) return;
-      configToggleSummary.textContent = message;
-    }
-
-    function getConfigToggleMessage() {
-      if (configOrigin === "browser") {
-        return "Zugangsdaten sind lokal gespeichert. Du kannst sie bei Bedarf einblenden.";
-      }
-      if (configOrigin === "external") {
-        return "Zugangsdaten stammen aus cloud-config.js. Du kannst sie bei Bedarf überschreiben.";
-      }
-      return "Trage deine JSONBin-Zugangsdaten ein, um die Cloud-Synchronisation zu aktivieren.";
-    }
-
-    function updateConfigHideAvailability() {
-      const canHide = configOrigin === "browser" || configOrigin === "external";
-      if (configHideBtn) {
-        configHideBtn.hidden = !canHide;
-      }
-      if (!canHide) {
-        setConfigFormVisibility(true);
-      }
-      updateConfigToggleSummary(getConfigToggleMessage());
-    }
-
-    function hideConfigFormIfAllowed(message) {
-      const canHide = configOrigin === "browser" || configOrigin === "external";
-      if (!canHide) return;
-      updateConfigToggleSummary(message || getConfigToggleMessage());
-      setConfigFormVisibility(false);
-    }
-
-    function fillConfigForm(value) {
-      if (!configForm) return;
-      configInputs.binId.value = value?.binId || "";
-      configInputs.masterKey.value = value?.masterKey || "";
-      configInputs.accessKey.value = value?.accessKey || "";
-    }
-
-    function applyConfig(next, { persist = false } = {}) {
-      const normalized = normalizeConfig(next);
-      if (!normalized) {
-        return false;
-      }
-      config = normalized;
-      cachedEntries = [];
-      storageMode = "cloud";
-      lastSyncedAt = null;
-      if (persist) {
-        writeStoredConfig(normalized);
-        configOrigin = "browser";
-      } else {
-        configOrigin = "inline";
-      }
-      return true;
-    }
-
-    function bindDiaryEvents() {
-      if (eventsBound) return;
-      form.addEventListener("submit", handleSubmit);
-      resetBtn.addEventListener("click", handleReset);
-      exportBtn.addEventListener("click", exportCsv);
-      entriesBody.addEventListener("click", handleEntryAction);
-      if (entriesList) {
-        entriesList.addEventListener("click", handleEntryAction);
-      }
-      eventsBound = true;
     }
 
     function toggleFormDisabled(disabled) {
@@ -1089,380 +726,6 @@
       controls?.forEach((control) => {
         control.disabled = disabled;
       });
-    }
-
-    function syncHistoryView() {
-      const hideTable = mobileQuery.matches;
-      if (tableWrapper) {
-        tableWrapper.setAttribute("aria-hidden", hideTable ? "true" : "false");
-      }
-      if (entriesList) {
-        entriesList.setAttribute("aria-hidden", hideTable ? "false" : "true");
-      }
-    }
-
-    if (mobileQuery.addEventListener) {
-      mobileQuery.addEventListener("change", syncHistoryView);
-    } else if (mobileQuery.addListener) {
-      mobileQuery.addListener(syncHistoryView);
-    }
-
-    function collectSideEffects(entry) {
-      return [
-        entry.kopfweh ? "Kopfweh" : null,
-        entry.bauchweh ? "Bauchweh" : null,
-        entry.schwindel ? "Schwindel" : null,
-      ].filter(Boolean);
-    }
-
-    function formatSideEffectsText(entry) {
-      const list = collectSideEffects(entry);
-      return list.length ? list.join(", ") : "Keine";
-    }
-
-    function createSideEffectsTags(entry) {
-      const list = collectSideEffects(entry);
-      if (!list.length) {
-        return '<span class="muted">Keine</span>';
-      }
-      return `<div class="tag-list">${list
-        .map((label) => `<span class="tag">${label}</span>`)
-        .join("")}</div>`;
-    }
-
-    function ensureConfigAvailable() {
-      if (!config) {
-        throw new Error("Cloud-Konfiguration fehlt.");
-      }
-    }
-
-    function normalizeEntry(entry) {
-      return {
-        datum: entry.datum ?? "",
-        stimmung: entry.stimmung ?? "",
-        konz: entry.konz ?? "",
-        vorm: entry.vorm ?? "",
-        abend: entry.abend ?? "",
-        appetit: entry.appetit ?? "",
-        ausbr: Boolean(entry.ausbr),
-        kopfweh: Boolean(entry.kopfweh),
-        bauchweh: Boolean(entry.bauchweh),
-        schwindel: Boolean(entry.schwindel),
-        auff: entry.auff ? entry.auff.toString() : "",
-      };
-    }
-
-    function sortByDate(a, b) {
-      if (!a?.datum) return -1;
-      if (!b?.datum) return 1;
-      return a.datum.localeCompare(b.datum);
-    }
-
-    function formatTimestamp(isoString) {
-      if (!isoString) return null;
-      const date = new Date(isoString);
-      if (Number.isNaN(date.getTime())) return null;
-      return date.toLocaleString("de-DE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      });
-    }
-
-    function getLastUpdateTimestamp() {
-      if (storageMode === "cloud") {
-        return lastSyncedAt;
-      }
-      if (storageMode === "local") {
-        return lastLocalSaveAt;
-      }
-      return null;
-    }
-
-    function buildHistorySummary(entries) {
-      if (!entries.length) {
-        return "Noch keine Einträge";
-      }
-      const first = entries[0]?.datum;
-      const last = entries[entries.length - 1]?.datum;
-      const range =
-        first && last ? (first === last ? first : `${first} bis ${last}`) : "";
-      const timestamp = formatTimestamp(getLastUpdateTimestamp());
-      const base = range ? `${entries.length} Einträge (${range})` : `${entries.length} Einträge`;
-      return timestamp ? `${base} · Stand ${timestamp}` : base;
-    }
-
-    function buildStatusSummary(entries) {
-      if (storageMode === "cloud") {
-        return entries.length
-          ? `Cloud synchronisiert – ${buildHistorySummary(entries)}`
-          : "Cloud verbunden. Noch keine Einträge gespeichert.";
-      }
-      if (storageMode === "local") {
-        return entries.length
-          ? `Lokale Sicherung aktiv – ${buildHistorySummary(entries)}`
-          : "Lokale Sicherung aktiv. Noch keine Einträge.";
-      }
-      return entries.length
-        ? `Temporäre Speicherung aktiv – ${entries.length} Einträge`
-        : "Temporäre Speicherung aktiv. Noch keine Einträge.";
-    }
-
-    function updateHistoryMeta(entries) {
-      if (!historyMeta) return;
-      let prefix = "Temporär";
-      if (storageMode === "cloud") {
-        prefix = "Cloud";
-      } else if (storageMode === "local") {
-        prefix = "Lokal";
-      }
-      historyMeta.textContent = `${prefix}: ${buildHistorySummary(entries)}`;
-    }
-
-    function renderToDom(entries) {
-      entriesBody.innerHTML = "";
-      if (entriesList) {
-        entriesList.innerHTML = "";
-      }
-
-      if (!entries.length) {
-        entriesBody.innerHTML = `<tr class="empty-state"><td colspan="10">Noch keine Einträge gespeichert.</td></tr>`;
-        if (entriesList) {
-          entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
-        }
-        updateHistoryMeta(entries);
-        return;
-      }
-
-      for (const entry of entries) {
-        const notesHtml = entry.auff ? entry.auff.replace(/\r?\n/g, "<br>") : "";
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${entry.datum}</td>
-          <td>${entry.stimmung}</td>
-          <td>${entry.konz}</td>
-          <td>${entry.vorm}</td>
-          <td>${entry.abend}</td>
-          <td>${entry.appetit || ""}</td>
-          <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
-          <td>${formatSideEffectsText(entry)}</td>
-          <td>${notesHtml}</td>
-          <td><button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Löschen</button></td>
-        `;
-        entriesBody.appendChild(row);
-
-        if (entriesList) {
-          const card = document.createElement("article");
-          card.className = "entry-card";
-          card.setAttribute("role", "listitem");
-          const notes = entry.auff ? entry.auff.replace(/\r?\n/g, "<br>") : "Keine Notizen";
-          card.innerHTML = `
-            <div class="entry-card__header">
-              <span class="entry-card__date">${entry.datum}</span>
-              <span class="entry-card__mood">${entry.stimmung}</span>
-            </div>
-            <dl>
-              <div>
-                <dt>Konzentration</dt>
-                <dd>${entry.konz}</dd>
-              </div>
-              <div>
-                <dt>Überreizung (Vormittag)</dt>
-                <dd>${entry.vorm}</dd>
-              </div>
-              <div>
-                <dt>Überreizung (Abend)</dt>
-                <dd>${entry.abend}</dd>
-              </div>
-              <div>
-                <dt>Appetit</dt>
-                <dd>${entry.appetit || "Keine Angabe"}</dd>
-              </div>
-              <div>
-                <dt>Ausbrüche</dt>
-                <dd>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</dd>
-              </div>
-              <div>
-                <dt>Nebenwirkungen</dt>
-                <dd>${createSideEffectsTags(entry)}</dd>
-              </div>
-              <div>
-                <dt>Notizen</dt>
-                <dd>${notes}</dd>
-              </div>
-            </dl>
-            <button type="button" class="table-action" data-entry-date="${entry.datum}" data-action="delete-entry">Eintrag löschen</button>
-          `;
-          entriesList.appendChild(card);
-        }
-      }
-
-      updateHistoryMeta(entries);
-    }
-
-    function buildHeaders(includeContentType = false) {
-      const headers = {};
-      if (!config) {
-        if (includeContentType) {
-          headers["Content-Type"] = "application/json";
-        }
-        return headers;
-      }
-      if (config.masterKey) {
-        headers["X-Master-Key"] = config.masterKey;
-      }
-      if (config.accessKey) {
-        headers["X-Access-Key"] = config.accessKey;
-      }
-      if (includeContentType) {
-        headers["Content-Type"] = "application/json";
-      }
-      return headers;
-    }
-
-    async function fetchFromJsonBin() {
-      ensureConfigAvailable();
-      const url = `${API_BASE}/${config.binId}/latest`;
-      const response = await fetch(url, { headers: buildHeaders() });
-      if (response.status === 404) {
-        throw new Error("Bin nicht gefunden (404). Bitte überprüfe deine JSONBin-ID.");
-      }
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `HTTP ${response.status}`);
-      }
-      const payload = await response.json();
-      lastSyncedAt =
-        payload.metadata?.updatedAt ||
-        payload.metadata?.modifiedAt ||
-        payload.metadata?.createdAt ||
-        new Date().toISOString();
-      const entries = Array.isArray(payload.record?.entries) ? payload.record.entries : [];
-      return entries.map(normalizeEntry).sort(sortByDate);
-    }
-
-    async function pushToJsonBin(entries) {
-      ensureConfigAvailable();
-      const url = `${API_BASE}/${config.binId}`;
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          ...buildHeaders(true),
-          "X-Bin-Versioning": "false",
-        },
-        body: JSON.stringify({
-          entries,
-          updatedAt: new Date().toISOString(),
-        }),
-      });
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || `HTTP ${response.status}`);
-      }
-      const payload = await response.json();
-      lastSyncedAt =
-        payload.metadata?.updatedAt ||
-        payload.metadata?.modifiedAt ||
-        payload.metadata?.createdAt ||
-        new Date().toISOString();
-      const savedEntries = Array.isArray(payload.record?.entries) ? payload.record.entries : entries;
-      return savedEntries.map(normalizeEntry).sort(sortByDate);
-    }
-
-    async function loadEntriesFromPreferredSource({ showStatus = true } = {}) {
-      if (!config) {
-        const entries = readLocalEntries();
-        cachedEntries = entries;
-        renderToDom(entries);
-        const message = storageAvailable
-          ? "Keine JSONBin-Zugangsdaten hinterlegt. Einträge werden lokal gespeichert."
-          : "Keine JSONBin-Zugangsdaten hinterlegt. Speichern ist nur temporär möglich.";
-        setStatus(message, storageAvailable ? "warning" : "error");
-        storageMode = storageAvailable ? "local" : "memory";
-        return entries;
-      }
-
-      if (showStatus) {
-        setStatus("Synchronisiere mit JSONBin…", "info");
-      }
-
-      try {
-        const entries = await fetchFromJsonBin();
-        storageMode = "cloud";
-        cachedEntries = entries;
-        writeLocalEntries(entries);
-        renderToDom(entries);
-        if (showStatus) {
-          setStatus(buildStatusSummary(entries), "success");
-        }
-        return entries;
-      } catch (error) {
-        console.error("Fehler beim Laden", error);
-        storageMode = storageAvailable ? "local" : "memory";
-        const entries = readLocalEntries();
-        cachedEntries = entries;
-        renderToDom(entries);
-        const message = storageAvailable
-          ? `Cloud nicht erreichbar (${error.message}). Lokale Sicherung aktiv.`
-          : `Cloud nicht erreichbar (${error.message}). Zwischenspeicherung – Daten gehen beim Schließen verloren.`;
-        if (showStatus) {
-          setStatus(message, storageAvailable ? "warning" : "error");
-        }
-        return entries;
-      }
-    }
-
-    async function getEntriesForWrite() {
-      if (!config) {
-        storageMode = storageAvailable ? "local" : "memory";
-        return readLocalEntries();
-      }
-      try {
-        const latest = await fetchFromJsonBin();
-        storageMode = "cloud";
-        writeLocalEntries(latest);
-        return latest;
-      } catch (error) {
-        console.error("Fehler beim Abrufen", error);
-        storageMode = storageAvailable ? "local" : "memory";
-        const entries = readLocalEntries();
-        const message = storageAvailable
-          ? `Cloud nicht erreichbar (${error.message}). Änderungen werden lokal gespeichert.`
-          : `Cloud nicht erreichbar (${error.message}). Änderungen können nur temporär gespeichert werden.`;
-        setStatus(message, storageAvailable ? "warning" : "error");
-        return entries;
-      }
-    }
-
-    async function persistEntries(entries) {
-      if (!config) {
-        storageMode = storageAvailable ? "local" : "memory";
-        writeLocalEntries(entries);
-        cachedEntries = entries;
-        renderToDom(entries);
-        const tone = storageAvailable ? "warning" : "error";
-        setStatus(buildStatusSummary(entries), tone);
-        return entries;
-      }
-      try {
-        const saved = await pushToJsonBin(entries);
-        storageMode = "cloud";
-        writeLocalEntries(saved);
-        cachedEntries = saved;
-        renderToDom(saved);
-        setStatus(buildStatusSummary(saved), "success");
-        return saved;
-      } catch (error) {
-        console.error("Fehler beim Speichern", error);
-        storageMode = storageAvailable ? "local" : "memory";
-        writeLocalEntries(entries);
-        cachedEntries = entries;
-        renderToDom(entries);
-        const message = storageAvailable
-          ? `Cloud-Speicherung fehlgeschlagen (${error.message}). Eintrag wurde lokal gesichert.`
-          : `Cloud-Speicherung fehlgeschlagen (${error.message}). Eintrag konnte nur temporär gesichert werden.`;
-        setStatus(message, storageAvailable ? "warning" : "error");
-        return entries;
-      }
     }
 
     async function handleSubmit(event) {
@@ -1479,9 +742,13 @@
       }
 
       toggleFormDisabled(true);
-      const savingToCloud = config && storageMode === "cloud";
-      const tone = savingToCloud ? "info" : storageAvailable ? "warning" : "error";
-      setStatus(savingToCloud ? "Speichere Eintrag in der Cloud…" : "Speichere Eintrag lokal…", tone);
+      const writingOnline = Boolean(config) && storageMode === "cloud";
+      const hasReliableStorage = writingOnline || storageAvailable;
+      const tone = hasReliableStorage ? "info" : "warning";
+      const message = hasReliableStorage
+        ? "Speichere Eintrag…"
+        : "Speichere Eintrag ohne dauerhafte Sicherung…";
+      setStatus(message, tone);
 
       try {
         const latest = await getEntriesForWrite();
@@ -1492,8 +759,6 @@
         } else {
           next.push(entry);
         }
-        next.sort(sortByDate);
-
         await persistEntries(next);
         form.reset();
         setDefaultDate();
@@ -1507,218 +772,20 @@
       setDefaultDate();
     }
 
-    function exportCsv() {
-      if (!cachedEntries.length) {
-        alert("Es gibt keine Einträge zum Exportieren.");
-        return;
-      }
-
-      const header = [
-        "Datum",
-        "Stimmung",
-        "Konzentration",
-        "Überreizung Vormittag",
-        "Überreizung Abend",
-        "Appetit",
-        "Ausbrüche",
-        "Kopfweh",
-        "Bauchweh",
-        "Schwindel",
-        "Auffälligkeiten",
-      ];
-
-      const rows = cachedEntries.map((entry) => [
-        entry.datum,
-        entry.stimmung,
-        entry.konz,
-        entry.vorm,
-        entry.abend,
-        entry.appetit || "",
-        entry.ausbr ? "Ja" : "Nein",
-        entry.kopfweh ? "Ja" : "Nein",
-        entry.bauchweh ? "Ja" : "Nein",
-        entry.schwindel ? "Ja" : "Nein",
-        (entry.auff || "").replace(/\r?\n/g, " "),
-      ]);
-
-      const csv = [header, ...rows]
-        .map((cols) =>
-          cols
-            .map((value) => {
-              const stringValue = value.toString();
-              if (/[,";]/.test(stringValue)) {
-                return '"' + stringValue.replace(/\"/g, '\"\"') + '"';
-              }
-              return stringValue;
-            })
-            .join(";")
-        )
-        .join("\n");
-
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = "medikinet-tagebuch_" + formatDateInput(today) + ".csv";
-      downloadLink.click();
-      URL.revokeObjectURL(downloadLink.href);
+    function bindDiaryEvents() {
+      if (eventsBound) return;
+      form?.addEventListener("submit", handleSubmit);
+      resetBtn?.addEventListener("click", handleReset);
+      eventsBound = true;
     }
 
-    async function deleteEntryByDate(entryDate) {
-      if (!entryDate) return;
-      const confirmDelete = window.confirm(`Eintrag vom ${entryDate} löschen?`);
-      if (!confirmDelete) return;
-
-      toggleFormDisabled(true);
-      const deletingFromCloud = config && storageMode === "cloud";
-      const tone = deletingFromCloud ? "info" : storageAvailable ? "warning" : "error";
-      setStatus(
-        deletingFromCloud
-          ? `Lösche Eintrag vom ${entryDate}…`
-          : `Entferne lokalen Eintrag vom ${entryDate}…`,
-        tone
-      );
-
-      try {
-        const latest = await getEntriesForWrite();
-        const next = latest.filter((item) => item.datum !== entryDate);
-        if (next.length === latest.length) {
-          setStatus(`Kein Eintrag vom ${entryDate} gefunden.`, "error");
-          return;
-        }
-        await persistEntries(next);
-      } finally {
-        toggleFormDisabled(false);
-      }
-    }
-
-    function handleEntryAction(event) {
-      const button = event.target.closest('[data-action="delete-entry"]');
-      if (!button) return;
-      const { entryDate } = button.dataset;
-      deleteEntryByDate(entryDate);
-    }
-
-    function handleConfigSubmit(event) {
-      event.preventDefault();
-      const formData = new FormData(configForm);
-      const next = {
-        binId: formData.get("config-bin-id"),
-        masterKey: formData.get("config-master-key"),
-        accessKey: formData.get("config-access-key"),
-      };
-      const saved = applyConfig(next, { persist: storageAvailable });
-      if (!saved) {
-        setStatus("Bitte gültige JSONBin-ID und Master-Key eingeben.", "error");
-        return;
-      }
-      updateConfigHideAvailability();
-      if (storageAvailable) {
-        updateConfigSource("Konfiguration im Browser gespeichert.");
-        hideConfigFormIfAllowed("Konfiguration im Browser gespeichert. Du kannst sie bei Bedarf einblenden.");
-      } else {
-        updateConfigSource("Konfiguration aktiv (wird nicht dauerhaft gespeichert).");
-        if (configStorageNote) {
-          configStorageNote.textContent =
-            "Lokaler Speicher ist nicht verfügbar. Die Zugangsdaten bleiben nur bis zum Schließen der Seite erhalten.";
-        }
-        setConfigFormVisibility(true);
-      }
-      startDiary({ fromConfigChange: true });
-    }
-
-    function handleConfigClear() {
-      clearStoredConfig();
-      config = null;
-      configOrigin = null;
-      cachedEntries = [];
-      storageMode = storageAvailable ? "local" : "memory";
-      lastSyncedAt = null;
-      fillConfigForm({ binId: "", masterKey: "", accessKey: "" });
-      updateConfigSource("Keine JSONBin-Zugangsdaten gespeichert.");
-      updateConfigHideAvailability();
-      setConfigFormVisibility(true);
-      startDiary({ fromConfigChange: true });
-    }
-
-    async function startDiary({ fromConfigChange = false } = {}) {
+    async function startDiary() {
       bindDiaryEvents();
       setDefaultDate();
-      syncHistoryView();
-
-      if (!config) {
-        const entries = readLocalEntries();
-        cachedEntries = entries;
-        renderToDom(entries);
-        const message = storageAvailable
-          ? "Keine JSONBin-Zugangsdaten hinterlegt. Einträge werden lokal gespeichert."
-          : "Keine JSONBin-Zugangsdaten hinterlegt. Speichern ist nur temporär möglich.";
-        setStatus(message, storageAvailable ? "warning" : "error");
-        return;
-      }
-
-      toggleFormDisabled(true);
-      try {
-        await loadEntriesFromPreferredSource({ showStatus: true });
-      } finally {
-        toggleFormDisabled(false);
-      }
+      await loadEntriesFromPreferredSource({ showStatus: true });
     }
 
-    function initializeConfigFlow() {
-      setDefaultDate();
-      syncHistoryView();
-
-      if (configForm) {
-        configForm.addEventListener("submit", handleConfigSubmit);
-      }
-      if (configClearBtn) {
-        configClearBtn.addEventListener("click", handleConfigClear);
-      }
-      if (configRevealBtn) {
-        configRevealBtn.addEventListener("click", () => {
-          setConfigFormVisibility(true);
-          updateConfigToggleSummary(getConfigToggleMessage());
-          if (configInputs.binId) {
-            configInputs.binId.focus();
-          }
-        });
-      }
-      if (configHideBtn) {
-        configHideBtn.addEventListener("click", () => {
-          hideConfigFormIfAllowed();
-        });
-      }
-
-      updateConfigHideAvailability();
-
-      if (configOrigin === "external" && config) {
-        fillConfigForm(config);
-        hideConfigFormIfAllowed("Konfiguration aus cloud-config.js geladen. Du kannst sie bei Bedarf einblenden.");
-        updateConfigSource("Konfiguration aus cloud-config.js geladen.");
-        startDiary();
-        return;
-      }
-
-      if (configOrigin === "browser" && config) {
-        fillConfigForm(config);
-        hideConfigFormIfAllowed("Konfiguration aus dem Browser geladen. Du kannst sie bei Bedarf einblenden.");
-        updateConfigSource("Konfiguration aus dem Browser geladen.");
-        startDiary();
-        return;
-      }
-
-      if (!storageAvailable && configStorageNote) {
-        configStorageNote.textContent =
-          "Lokaler Speicher ist nicht verfügbar. Zugangsdaten bleiben nur bis zum Schließen der Seite erhalten.";
-      }
-
-      fillConfigForm({ binId: "", masterKey: "", accessKey: "" });
-      updateConfigSource("Noch keine Zugangsdaten gespeichert.");
-      setConfigFormVisibility(true);
-      startDiary();
-    }
-
-    initializeConfigFlow();
+    startDiary();
   </script>
 
 </body>

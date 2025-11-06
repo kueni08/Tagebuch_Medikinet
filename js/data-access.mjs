@@ -1,5 +1,5 @@
-const API_BASE = "https://api.jsonbin.io/v3/b";
-const STORAGE_KEYS = {
+export const API_BASE = "https://api.jsonbin.io/v3/b";
+export const STORAGE_KEYS = {
   config: "medikinetJsonBinConfig",
   entries: "medikinetDiaryEntries",
 };
@@ -14,7 +14,7 @@ const MOOD_SCALE = {
 
 const MOOD_LABELS = Object.keys(MOOD_SCALE);
 
-function detectStorageSupport() {
+export function detectStorageSupport() {
   if (typeof window === "undefined" || !("localStorage" in window)) {
     return false;
   }
@@ -29,7 +29,7 @@ function detectStorageSupport() {
   }
 }
 
-function normalizeConfig(value) {
+export function normalizeConfig(value) {
   if (!value) return null;
   const { binId, masterKey, accessKey } = value;
   if (!binId || typeof binId !== "string") {
@@ -42,7 +42,7 @@ function normalizeConfig(value) {
   };
 }
 
-function readStoredConfig() {
+export function readStoredConfig() {
   if (!detectStorageSupport()) return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEYS.config);
@@ -51,6 +51,28 @@ function readStoredConfig() {
   } catch (error) {
     console.warn("Gespeicherte Cloud-Konfiguration konnte nicht gelesen werden", error);
     return null;
+  }
+}
+
+export function writeStoredConfig(value) {
+  if (!detectStorageSupport()) return false;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.warn("Cloud-Konfiguration konnte nicht gespeichert werden", error);
+    return false;
+  }
+}
+
+export function clearStoredConfig() {
+  if (!detectStorageSupport()) return false;
+  try {
+    window.localStorage.removeItem(STORAGE_KEYS.config);
+    return true;
+  } catch (error) {
+    console.warn("Cloud-Konfiguration konnte nicht entfernt werden", error);
+    return false;
   }
 }
 
@@ -69,7 +91,7 @@ export function getActiveConfig() {
   return { config: null, origin: null };
 }
 
-function normalizeEntry(entry) {
+export function normalizeEntry(entry) {
   return {
     datum: entry?.datum ?? "",
     stimmung: entry?.stimmung ?? "",
@@ -85,14 +107,14 @@ function normalizeEntry(entry) {
   };
 }
 
-function sortByDate(entries) {
+export function sortByDate(entries) {
   return entries
     .slice()
     .filter((entry) => entry.datum)
     .sort((a, b) => a.datum.localeCompare(b.datum));
 }
 
-function readLocalEntries() {
+export function readLocalEntries() {
   const supportsStorage = detectStorageSupport();
   let updatedAt = null;
   if (!supportsStorage) {
@@ -117,7 +139,25 @@ function readLocalEntries() {
   return { entries: [], updatedAt };
 }
 
-async function fetchFromJsonBin(config) {
+export function writeLocalEntries(entries, updatedAt = new Date().toISOString()) {
+  const supportsStorage = detectStorageSupport();
+  if (!supportsStorage) {
+    return false;
+  }
+  try {
+    const payload = {
+      entries: entries.map(normalizeEntry),
+      updatedAt,
+    };
+    window.localStorage.setItem(STORAGE_KEYS.entries, JSON.stringify(payload));
+    return true;
+  } catch (error) {
+    console.warn("Lokale Sicherung konnte nicht gespeichert werden", error);
+    return false;
+  }
+}
+
+export async function fetchEntriesFromJsonBin(config) {
   const url = `${API_BASE}/${config.binId}/latest`;
   const headers = {};
   if (config.masterKey) {
@@ -146,12 +186,46 @@ async function fetchFromJsonBin(config) {
   return { entries: sortByDate(entries), updatedAt };
 }
 
+export async function pushEntriesToJsonBin(config, entries) {
+  const url = `${API_BASE}/${config.binId}`;
+  const headers = {};
+  if (config.masterKey) {
+    headers["X-Master-Key"] = config.masterKey;
+  }
+  if (config.accessKey) {
+    headers["X-Access-Key"] = config.accessKey;
+  }
+  headers["Content-Type"] = "application/json";
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: { ...headers, "X-Bin-Versioning": "false" },
+    body: JSON.stringify({
+      entries: entries.map(normalizeEntry),
+      updatedAt: new Date().toISOString(),
+    }),
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `HTTP ${response.status}`);
+  }
+  const payload = await response.json();
+  const updatedAt =
+    payload.metadata?.updatedAt ||
+    payload.metadata?.modifiedAt ||
+    payload.metadata?.createdAt ||
+    new Date().toISOString();
+  const savedEntries = Array.isArray(payload.record?.entries)
+    ? payload.record.entries.map(normalizeEntry)
+    : entries;
+  return { entries: sortByDate(savedEntries), updatedAt };
+}
+
 export async function loadEntries(preferCloud = true) {
   const { config } = getActiveConfig();
   let cloudError = null;
   if (preferCloud && config) {
     try {
-      const result = await fetchFromJsonBin(config);
+      const result = await fetchEntriesFromJsonBin(config);
       return { ...result, source: "cloud", cloudError: null };
     } catch (error) {
       console.warn("Cloud konnte nicht geladen werden", error);
