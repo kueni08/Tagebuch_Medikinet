@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cloud-Anleitung · Medikinet Tagebuch</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
+    <script src="js/pwa.js" defer></script>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        --bg: #f5f7fb;
+        --fg: #1f2937;
+        --card: #ffffff;
+        --primary: #4f46e5;
+        --border: #e2e7f5;
+        --radius: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        justify-content: center;
+        padding: clamp(16px, 3vw, 40px) clamp(12px, 4vw, 32px);
+      }
+
+      main {
+        width: min(880px, 100%);
+        display: grid;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand img {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      nav a {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      nav a:hover,
+      nav a:focus-visible {
+        background: rgba(79, 70, 229, 0.2);
+        outline: none;
+      }
+
+      nav a[aria-current="page"] {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+      }
+
+      p.lead {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.5;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: clamp(18px, 3vw, 32px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        display: grid;
+        gap: 18px;
+      }
+
+      .config-section {
+        gap: 20px;
+      }
+
+      .config-info {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #4b5563;
+      }
+
+      .config-form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .config-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .config-field {
+        display: grid;
+        gap: 6px;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .config-field input {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font: inherit;
+        background: #fdfdff;
+        transition: border 0.2s, box-shadow 0.2s;
+      }
+
+      .config-field input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+      }
+
+      .config-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .config-note {
+        margin: 0;
+        font-size: 0.92rem;
+        color: #6b7280;
+      }
+
+      button {
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button.primary {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+      }
+
+      button.primary:hover {
+        background: var(--primary);
+        filter: brightness(0.95);
+      }
+
+      button.secondary {
+        background: #e5e7ff;
+        color: var(--primary);
+      }
+
+      button.secondary:hover {
+        background: #d4d6ff;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .status[data-tone="info"] {
+        background: #eef2ff;
+        color: #3730a3;
+      }
+
+      .status[data-tone="success"] {
+        background: #ecfdf5;
+        color: #047857;
+      }
+
+      .status[data-tone="error"] {
+        background: #fef2f2;
+        color: #b91c1c;
+      }
+
+      .status[data-tone="warning"] {
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      details {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px 18px;
+        background: #fbfcff;
+      }
+
+      summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        list-style: none;
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary::after {
+        content: "➕";
+        font-size: 1.2rem;
+        color: var(--primary);
+        transition: transform 0.2s;
+      }
+
+      details[open] summary::after {
+        content: "➖";
+      }
+
+      details p,
+      details ol,
+      details ul {
+        margin: 12px 0 0;
+        color: #4b5563;
+        line-height: 1.6;
+      }
+
+      details ul {
+        padding-left: 20px;
+      }
+
+      .note {
+        border-radius: 14px;
+        padding: 14px 18px;
+        background: rgba(79, 70, 229, 0.08);
+        color: #312e81;
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 640px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        nav {
+          width: 100%;
+          justify-content: center;
+        }
+
+        nav a {
+          flex: 1 1 100%;
+          text-align: center;
+        }
+
+        .config-actions {
+          flex-direction: column;
+        }
+
+        .config-actions button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <img src="icons/icon-192.svg" alt="Medikinet Tagebuch" />
+          <div>
+            <h1>Cloud-Anleitung</h1>
+            <p class="lead">Schnellstart für die JSONBin-Anbindung und lokale Sicherung.</p>
+          </div>
+        </div>
+        <nav aria-label="Seitennavigation">
+          <a href="index.html">Tagebuch</a>
+          <a href="stimmungsverlauf.html">Verlauf</a>
+          <a href="cloud-guide.html" aria-current="page">Cloud-Anleitung</a>
+        </nav>
+      </header>
+
+      <section class="card" aria-label="Cloud Schritt für Schritt">
+        <details open>
+          <summary>1. Zugang in JSONBin anlegen</summary>
+          <ol>
+            <li>Auf <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a> anmelden und einen neuen privaten Bin erstellen.</li>
+            <li>Den automatisch vergebenen <strong>Bin Identifier</strong> kopieren.</li>
+            <li>Unter <em>API Keys</em> einen <strong>Master Key</strong> und optional einen <strong>Access Key</strong> erzeugen.</li>
+          </ol>
+          <p class="note">Tipp: Lege dir einen eigenen Ordner wie <em>medikinet-tagebuch</em> an, damit du die Daten schnell findest.</p>
+        </details>
+
+        <details>
+          <summary>2. Zugangsdaten eintragen</summary>
+          <ol>
+            <li>Scrolle auf dieser Seite zum Abschnitt <em>Cloud-Zugangsdaten verwalten</em>.</li>
+            <li>Trage <strong>Bin-ID</strong>, <strong>Master-Key</strong> und ggf. <strong>Access-Key</strong> in die Felder ein.</li>
+            <li>Speichere die Eingaben. Auf allen Seiten wird anschließend automatisch synchronisiert.</li>
+          </ol>
+          <p>Die Daten werden verschlüsselt an JSONBin gesendet. Fällt die Cloud aus, greift automatisch die lokale Sicherung.</p>
+        </details>
+
+        <details>
+          <summary>3. Geräte synchronisieren</summary>
+          <ul>
+            <li>Melde dich auf jedem Gerät einmalig mit denselben JSONBin-Daten an.</li>
+            <li>Nach dem Speichern lädt die App automatisch die neuesten Einträge.</li>
+            <li>Über den Button <em>CSV exportieren</em> kannst du regelmäßige Backups erstellen.</li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="card config-section" aria-labelledby="config-title">
+        <h2 id="config-title" style="margin:0;font-size:1.2rem;">Cloud-Zugangsdaten verwalten</h2>
+        <p class="config-info" id="config-info">Prüfe oder aktualisiere hier die Zugangsdaten für dein JSONBin.</p>
+        <form class="config-form" id="cloud-config-form" autocomplete="off">
+          <div class="config-grid">
+            <label class="config-field" for="config-bin-id">
+              JSONBin ID
+              <input
+                type="text"
+                id="config-bin-id"
+                name="config-bin-id"
+                inputmode="text"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="z. B. 64f3a6e1baf603…"
+                required
+              />
+            </label>
+            <label class="config-field" for="config-master-key">
+              Master Key
+              <input
+                type="password"
+                id="config-master-key"
+                name="config-master-key"
+                autocomplete="off"
+                placeholder="beginnt meist mit $2b$…"
+                required
+              />
+            </label>
+            <label class="config-field" for="config-access-key">
+              Access Key (optional)
+              <input
+                type="password"
+                id="config-access-key"
+                name="config-access-key"
+                autocomplete="off"
+                placeholder="nur falls vergeben"
+              />
+            </label>
+          </div>
+          <div class="config-actions">
+            <button type="submit" class="primary" id="config-save-btn">Zugangsdaten speichern</button>
+            <button type="button" class="secondary" id="config-clear-btn">Gespeicherte Daten löschen</button>
+          </div>
+          <p class="config-note" id="config-note">Hinweis: Die Zugangsdaten werden ausschließlich lokal im Browser gespeichert.</p>
+        </form>
+        <div class="status" id="config-status" role="status" aria-live="polite" data-tone="info">Bereit zum Aktualisieren.</div>
+      </section>
+
+      <section class="card" aria-label="Tipps und Fehlerbehebung">
+        <h2 style="margin:0;font-size:1.2rem;">Tipps &amp; Fehlerbehebung</h2>
+        <details>
+          <summary>Cloud ist nicht erreichbar</summary>
+          <p>Der Status-Hinweis zeigt dir, ob gerade lokal oder in der Cloud gespeichert wird. Sollte JSONBin ausfallen, werden die Einträge lokal abgelegt und beim nächsten Online-Zugriff hochgeladen.</p>
+        </details>
+        <details>
+          <summary>Zugangsdaten ändern</summary>
+          <p>Nutze den Abschnitt <em>Cloud-Zugangsdaten verwalten</em> weiter unten auf dieser Seite. Dort kannst du die gespeicherten Daten einsehen, anpassen oder komplett löschen.</p>
+        </details>
+        <details>
+          <summary>Installierbare App nutzen</summary>
+          <p>Über das Browser-Menü kannst du die Seite als App installieren. Nach der Installation läuft sie offline und benötigt keinen dauerhaft entsperrten Browser.</p>
+        </details>
+      </section>
+    </main>
+    <script type="module">
+      import {
+        detectStorageSupport,
+        getActiveConfig,
+        readStoredConfig,
+        writeStoredConfig,
+        clearStoredConfig,
+        normalizeConfig,
+      } from "./js/data-access.mjs";
+
+      const form = document.getElementById("cloud-config-form");
+      const infoEl = document.getElementById("config-info");
+      const statusEl = document.getElementById("config-status");
+      const noteEl = document.getElementById("config-note");
+      const clearBtn = document.getElementById("config-clear-btn");
+      const saveBtn = document.getElementById("config-save-btn");
+      const inputs = {
+        binId: document.getElementById("config-bin-id"),
+        masterKey: document.getElementById("config-master-key"),
+        accessKey: document.getElementById("config-access-key"),
+      };
+
+      const storageAvailable = detectStorageSupport();
+
+      function setStatus(message, tone = "info") {
+        statusEl.textContent = message;
+        statusEl.setAttribute("data-tone", tone);
+      }
+
+      function fillForm(config) {
+        inputs.binId.value = config?.binId || "";
+        inputs.masterKey.value = config?.masterKey || "";
+        inputs.accessKey.value = config?.accessKey || "";
+      }
+
+      function refreshView() {
+        const stored = readStoredConfig();
+        const { config: activeConfig, origin } = getActiveConfig();
+
+        if (stored) {
+          fillForm(stored);
+        } else if (activeConfig) {
+          fillForm(activeConfig);
+        } else {
+          fillForm({ binId: "", masterKey: "", accessKey: "" });
+        }
+
+        let infoMessage = "Es sind derzeit keine Zugangsdaten aktiv.";
+        if (origin === "browser") {
+          infoMessage = "Aktiv: Zugangsdaten aus dem Browser-Speicher.";
+        } else if (origin === "inline") {
+          infoMessage = "Aktiv: Zugangsdaten aus cloud-config.js.";
+          if (stored) {
+            infoMessage += " Zusätzlich ist ein Browser-Eintrag vorhanden, der nach dem Speichern bevorzugt wird.";
+          }
+        }
+        if (stored && origin !== "browser") {
+          infoMessage += " Im Browser ist bereits ein Datensatz gespeichert.";
+        }
+        infoEl.textContent = infoMessage;
+
+        if (!storageAvailable) {
+          noteEl.textContent = "Lokaler Speicher ist auf diesem Gerät nicht verfügbar. Zugangsdaten bleiben nur bis zum Schließen dieser Seite erhalten.";
+          clearBtn.disabled = true;
+          saveBtn.disabled = true;
+          setStatus("Lokaler Speicher ist nicht verfügbar. Änderungen können nicht dauerhaft gesichert werden.", "warning");
+        } else {
+          noteEl.textContent = "Hinweis: Die Zugangsdaten werden ausschließlich lokal im Browser gespeichert.";
+          clearBtn.disabled = !stored;
+          saveBtn.disabled = false;
+          setStatus(
+            activeConfig
+              ? origin === "browser"
+                ? "Zugangsdaten aus dem Browser sind aktiv."
+                : "Du kannst eigene Zugangsdaten speichern, um cloud-config.js zu überschreiben."
+              : stored
+              ? "Zugangsdaten wurden geladen, sind aber noch nicht aktiv."
+              : "Trage deine JSONBin-Daten ein und speichere sie im Browser.",
+            activeConfig ? "success" : stored ? "warning" : "info"
+          );
+        }
+      }
+
+      function handleSubmit(event) {
+        event.preventDefault();
+        if (!storageAvailable) {
+          setStatus("Lokaler Speicher ist nicht verfügbar. Speichern nicht möglich.", "error");
+          return;
+        }
+
+        const next = {
+          binId: inputs.binId.value.trim(),
+          masterKey: inputs.masterKey.value.trim(),
+          accessKey: inputs.accessKey.value.trim(),
+        };
+
+        const normalized = normalizeConfig(next);
+        if (!normalized) {
+          setStatus("Bitte gültige JSONBin-ID und Master-Key angeben.", "error");
+          return;
+        }
+
+        const saved = writeStoredConfig(normalized);
+        if (saved) {
+          setStatus("Zugangsdaten im Browser gespeichert.", "success");
+        } else {
+          setStatus("Zugangsdaten konnten nicht gespeichert werden.", "error");
+        }
+        refreshView();
+      }
+
+      function handleClear() {
+        if (!storageAvailable) {
+          setStatus("Lokaler Speicher ist nicht verfügbar.", "error");
+          return;
+        }
+        const confirmed = window.confirm("Gespeicherte Zugangsdaten wirklich löschen?");
+        if (!confirmed) return;
+        const removed = clearStoredConfig();
+        setStatus(
+          removed ? "Gespeicherte Zugangsdaten wurden entfernt." : "Zugangsdaten konnten nicht entfernt werden.",
+          removed ? "success" : "error"
+        );
+        refreshView();
+      }
+
+      form.addEventListener("submit", handleSubmit);
+      clearBtn.addEventListener("click", handleClear);
+
+      refreshView();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stimmungsverlauf · Medikinet Tagebuch</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
+    <script src="js/pwa.js" defer></script>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        --bg: #f5f7fb;
+        --fg: #1f2937;
+        --card: #ffffff;
+        --primary: #4f46e5;
+        --border: #e2e7f5;
+        --radius: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        justify-content: center;
+        padding: clamp(16px, 3vw, 40px) clamp(12px, 4vw, 32px);
+      }
+
+      main {
+        width: min(960px, 100%);
+        display: grid;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand img {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      nav a {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      nav a:hover,
+      nav a:focus-visible {
+        background: rgba(79, 70, 229, 0.2);
+        outline: none;
+      }
+
+      nav a[aria-current="page"] {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+      }
+
+      p.lead {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.5;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: clamp(18px, 3vw, 32px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        display: grid;
+        gap: 18px;
+      }
+
+      #chart-container {
+        position: relative;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 12px;
+      }
+
+      #mood-chart {
+        width: 100%;
+        min-width: 520px;
+        height: auto;
+      }
+
+      .chart-meta {
+        display: grid;
+        gap: 8px;
+        color: #4b5563;
+      }
+
+      .chart-meta strong {
+        color: var(--fg);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .legend li {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.08);
+      }
+
+      .history-block {
+        display: grid;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .history-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .history-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .history-meta {
+        flex: 1 1 220px;
+        min-width: 200px;
+        color: #4b5563;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .muted {
+        color: #6b7280;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      button {
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button.secondary {
+        background: #e5e7ff;
+        color: var(--primary);
+      }
+
+      button.secondary:hover {
+        background: #d4d6ff;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .status[data-tone="info"] {
+        background: #eef2ff;
+        color: #3730a3;
+      }
+
+      .status[data-tone="success"] {
+        background: #ecfdf5;
+        color: #047857;
+      }
+
+      .status[data-tone="error"] {
+        background: #fef2f2;
+        color: #b91c1c;
+      }
+
+      .status[data-tone="warning"] {
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      .table-wrapper {
+        border-radius: 16px;
+        overflow-x: auto;
+        background: rgba(79, 70, 229, 0.03);
+        padding: 2px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+        min-width: 720px;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+
+      th {
+        background: #eef1ff;
+        font-weight: 700;
+      }
+
+      tbody tr:hover {
+        background: rgba(79, 70, 229, 0.05);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 28px 16px;
+        color: #6b7280;
+        font-weight: 600;
+      }
+
+      .table-action {
+        background: transparent;
+        border: 1px solid rgba(79, 70, 229, 0.3);
+        color: var(--primary);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      .table-action:hover {
+        background: rgba(79, 70, 229, 0.08);
+      }
+
+      .entry-card .table-action {
+        justify-self: start;
+      }
+
+      .entries-list {
+        display: none;
+        gap: 12px;
+      }
+
+      .entry-card {
+        border: 1px solid rgba(79, 70, 229, 0.12);
+        border-radius: 16px;
+        padding: 16px;
+        background: #ffffff;
+        display: grid;
+        gap: 12px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      .entry-card__header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        font-weight: 700;
+      }
+
+      .entry-card__mood {
+        color: var(--primary);
+      }
+
+      .entry-card dl {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+      }
+
+      .entry-card dl div {
+        display: grid;
+        gap: 4px;
+      }
+
+      .entry-card dt {
+        font-weight: 600;
+        color: #4b5563;
+        font-size: 0.9rem;
+      }
+
+      .entry-card dd {
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      @media (max-width: 720px) {
+        .history-actions {
+          justify-content: center;
+        }
+
+        .history-meta {
+          text-align: center;
+        }
+
+        .table-wrapper {
+          display: none;
+        }
+
+        .entries-list {
+          display: grid;
+        }
+      }
+
+      @media (max-width: 640px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        nav {
+          width: 100%;
+          justify-content: center;
+        }
+
+        nav a {
+          flex: 1 1 100%;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <img src="icons/icon-192.svg" alt="Medikinet Tagebuch" />
+          <div>
+            <h1>Stimmungsverlauf</h1>
+            <p class="lead">Visualisiere die Stimmung und markiere Auffälligkeiten mit einem Blick.</p>
+          </div>
+        </div>
+        <nav aria-label="Seitennavigation">
+          <a href="index.html">Tagebuch</a>
+          <a href="stimmungsverlauf.html" aria-current="page">Verlauf</a>
+          <a href="cloud-guide.html">Cloud-Anleitung</a>
+        </nav>
+      </header>
+
+      <section class="card" aria-labelledby="chart-title">
+        <div class="chart-meta">
+          <div class="status" id="chart-status">Warte auf Daten…</div>
+          <strong id="chart-summary"></strong>
+        </div>
+        <div id="chart-container">
+          <svg id="mood-chart" role="img" aria-labelledby="chart-title chart-summary"></svg>
+        </div>
+        <div>
+          <h2 id="chart-title" style="margin:0;font-size:1.1rem;">Legende</h2>
+          <ul class="legend" id="mood-legend"></ul>
+          <p style="margin:8px 0 0;color:#6b7280;font-size:0.9rem;">⚡ markiert Tage mit auffälligen Ausbrüchen.</p>
+        </div>
+        <div class="history-block" aria-labelledby="history-title">
+          <div class="history-header">
+            <div class="badge" id="history-title">Verlauf</div>
+            <div class="history-actions">
+              <span class="history-meta" id="history-meta" aria-live="polite"></span>
+              <button type="button" class="secondary" id="export-btn">📁 Verlauf als CSV</button>
+            </div>
+          </div>
+          <div class="status" id="history-status" role="status" aria-live="polite" data-tone="info">Lade Verlauf…</div>
+          <div class="table-wrapper" aria-hidden="false">
+            <table aria-live="polite" aria-describedby="history-title">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Stimmung</th>
+                  <th>Konzentration</th>
+                  <th>Überreizung (VM)</th>
+                  <th>Überreizung (Ab)</th>
+                  <th>Appetit</th>
+                  <th>Ausbrüche</th>
+                  <th>Nebenwirkungen</th>
+                  <th>Notizen</th>
+                  <th>Aktion</th>
+                </tr>
+              </thead>
+              <tbody id="entries-body"></tbody>
+            </table>
+          </div>
+          <div class="entries-list" id="entries-list" role="list" aria-live="polite" aria-hidden="true"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="js/mood-chart.mjs"></script>
+  </body>
+</html>
