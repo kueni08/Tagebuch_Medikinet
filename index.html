@@ -1368,7 +1368,8 @@
         entry.kopfweh ? "Ja" : "Nein",
         entry.bauchweh ? "Ja" : "Nein",
         entry.schwindel ? "Ja" : "Nein",
-        entry.auff?.replace(/?
+        entry.auff?.replace(/
+?
 /g, " ").replace(/"/g, '""') || "",
       ]);
 
