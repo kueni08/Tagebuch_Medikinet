@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cloud-Anleitung · Medikinet Tagebuch</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
+    <script src="js/pwa.js" defer></script>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        --bg: #f5f7fb;
+        --fg: #1f2937;
+        --card: #ffffff;
+        --primary: #4f46e5;
+        --border: #e2e7f5;
+        --radius: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--fg);
+        display: flex;
+        justify-content: center;
+        padding: clamp(16px, 3vw, 40px) clamp(12px, 4vw, 32px);
+      }
+
+      main {
+        width: min(880px, 100%);
+        display: grid;
+        gap: 24px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand img {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      nav {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      nav a {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.12);
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background 0.2s, color 0.2s;
+      }
+
+      nav a:hover,
+      nav a:focus-visible {
+        background: rgba(79, 70, 229, 0.2);
+        outline: none;
+      }
+
+      nav a[aria-current="page"] {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+      }
+
+      p.lead {
+        margin: 0;
+        color: #4b5563;
+        line-height: 1.5;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: clamp(18px, 3vw, 32px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        display: grid;
+        gap: 18px;
+      }
+
+      details {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px 18px;
+        background: #fbfcff;
+      }
+
+      summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        list-style: none;
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary::after {
+        content: "➕";
+        font-size: 1.2rem;
+        color: var(--primary);
+        transition: transform 0.2s;
+      }
+
+      details[open] summary::after {
+        content: "➖";
+      }
+
+      details p,
+      details ol,
+      details ul {
+        margin: 12px 0 0;
+        color: #4b5563;
+        line-height: 1.6;
+      }
+
+      details ul {
+        padding-left: 20px;
+      }
+
+      .note {
+        border-radius: 14px;
+        padding: 14px 18px;
+        background: rgba(79, 70, 229, 0.08);
+        color: #312e81;
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 640px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        nav {
+          width: 100%;
+          justify-content: center;
+        }
+
+        nav a {
+          flex: 1 1 100%;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <img src="icons/icon-192.svg" alt="Medikinet Tagebuch" />
+          <div>
+            <h1>Cloud-Anleitung</h1>
+            <p class="lead">Schnellstart für die JSONBin-Anbindung und lokale Sicherung.</p>
+          </div>
+        </div>
+        <nav aria-label="Seitennavigation">
+          <a href="index.html">Tagebuch</a>
+          <a href="stimmungsverlauf.html">Verlauf</a>
+          <a href="cloud-guide.html" aria-current="page">Cloud-Anleitung</a>
+        </nav>
+      </header>
+
+      <section class="card" aria-label="Cloud Schritt für Schritt">
+        <details open>
+          <summary>1. Zugang in JSONBin anlegen</summary>
+          <ol>
+            <li>Auf <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a> anmelden und einen neuen privaten Bin erstellen.</li>
+            <li>Den automatisch vergebenen <strong>Bin Identifier</strong> kopieren.</li>
+            <li>Unter <em>API Keys</em> einen <strong>Master Key</strong> und optional einen <strong>Access Key</strong> erzeugen.</li>
+          </ol>
+          <p class="note">Tipp: Lege dir einen eigenen Ordner wie <em>medikinet-tagebuch</em> an, damit du die Daten schnell findest.</p>
+        </details>
+
+        <details>
+          <summary>2. Zugangsdaten im Tagebuch hinterlegen</summary>
+          <ol>
+            <li>Öffne die Hauptseite und klappe den Bereich <em>Cloud-Speicher</em> auf.</li>
+            <li>Trage <strong>Bin-ID</strong>, <strong>Master-Key</strong> und ggf. <strong>Access-Key</strong> ein.</li>
+            <li>Speichere die Eingaben. Danach wird der Bereich automatisch ausgeblendet.</li>
+          </ol>
+          <p>Die Daten werden verschlüsselt an JSONBin gesendet. Fällt die Cloud aus, greift automatisch die lokale Sicherung.</p>
+        </details>
+
+        <details>
+          <summary>3. Geräte synchronisieren</summary>
+          <ul>
+            <li>Melde dich auf jedem Gerät einmalig mit denselben JSONBin-Daten an.</li>
+            <li>Nach dem Speichern lädt die App automatisch die neuesten Einträge.</li>
+            <li>Über den Button <em>CSV exportieren</em> kannst du regelmäßige Backups erstellen.</li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="card" aria-label="Tipps und Fehlerbehebung">
+        <h2 style="margin:0;font-size:1.2rem;">Tipps &amp; Fehlerbehebung</h2>
+        <details>
+          <summary>Cloud ist nicht erreichbar</summary>
+          <p>Der Status-Hinweis zeigt dir, ob gerade lokal oder in der Cloud gespeichert wird. Sollte JSONBin ausfallen, werden die Einträge lokal abgelegt und beim nächsten Online-Zugriff hochgeladen.</p>
+        </details>
+        <details>
+          <summary>Zugangsdaten ändern</summary>
+          <p>Öffne auf der Hauptseite das Menü <em>Cloud-Zugangsdaten anzeigen</em>. Dort kannst du die gespeicherten Daten einsehen, anpassen oder komplett löschen.</p>
+        </details>
+        <details>
+          <summary>Installierbare App nutzen</summary>
+          <p>Über das Browser-Menü kannst du die Seite als App installieren. Nach der Installation läuft sie offline und benötigt keinen dauerhaft entsperrten Browser.</p>
+        </details>
+      </section>
+    </main>
+  </body>
+</html>
