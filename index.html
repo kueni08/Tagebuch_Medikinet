@@ -465,6 +465,16 @@
             <input type="date" id="datum" name="datum" required />
           </label>
           <label>
+            Dosierung
+            <select id="dosierung" name="dosierung" required>
+              <option value="5 mg">5 mg</option>
+              <option value="10 mg">10 mg</option>
+              <option value="15 mg">15 mg</option>
+              <option value="20 mg">20 mg</option>
+              <option value="25 mg">25 mg</option>
+            </select>
+          </label>
+          <label>
             Stimmung
             <select id="stimmung" name="stimmung" required>
               <option value="😊 Sehr gut">😊 Sehr gut</option>
@@ -475,8 +485,18 @@
             </select>
           </label>
           <label>
-            Konzentration (Schule)
-            <select id="konz" name="konz" required>
+            Konzentration (Morgen)
+            <select id="konz_morgen" name="konz_morgen" required>
+              <option value="😊 Sehr fokussiert">😊 Sehr fokussiert</option>
+              <option value="🙂 Gut fokussiert">🙂 Gut fokussiert</option>
+              <option value="😐 Mittel">😐 Mittel</option>
+              <option value="☹️ Schwierig">☹️ Schwierig</option>
+              <option value="😣 Kaum möglich">😣 Kaum möglich</option>
+            </select>
+          </label>
+          <label>
+            Konzentration (Nachmittag)
+            <select id="konz_nachmittag" name="konz_nachmittag" required>
               <option value="😊 Sehr fokussiert">😊 Sehr fokussiert</option>
               <option value="🙂 Gut fokussiert">🙂 Gut fokussiert</option>
               <option value="😐 Mittel">😐 Mittel</option>
@@ -502,6 +522,16 @@
               <option value="😐 Leicht angespannt">😐 Leicht angespannt</option>
               <option value="☹️ Deutlich angespannt">☹️ Deutlich angespannt</option>
               <option value="😣 Stark überreizt">😣 Stark überreizt</option>
+            </select>
+          </label>
+          <label>
+            Hausaufgabenmenge
+            <select id="hausaufgaben" name="hausaufgaben" required>
+              <option value="😌 Keine">😌 Keine</option>
+              <option value="🙂 Wenige">🙂 Wenige</option>
+              <option value="😐 Normal">😐 Normal</option>
+              <option value="☹️ Viele">☹️ Viele</option>
+              <option value="😣 Sehr viele">😣 Sehr viele</option>
             </select>
           </label>
           <label>
@@ -567,13 +597,20 @@
     const form = document.getElementById("entry-form");
     const resetBtn = document.getElementById("reset-btn");
     const statusEl = document.getElementById("cloud-status");
+    const dateField = document.getElementById("datum");
+    const dosierungField = document.getElementById("dosierung");
+
+    const DEFAULT_DOSING_VALUE = "10 mg";
 
     const fields = [
       "datum",
+      "dosierung",
       "stimmung",
-      "konz",
+      "konz_morgen",
+      "konz_nachmittag",
       "vorm",
       "abend",
+      "hausaufgaben",
       "appetit",
       "ausbr",
       "kopfweh",
@@ -608,9 +645,43 @@
     }
 
     function setDefaultDate() {
-      const dateInput = document.getElementById("datum");
-      if (!dateInput.value) {
-        dateInput.value = formatDateInput(today);
+      if (!dateField.value) {
+        dateField.value = formatDateInput(today);
+      }
+    }
+
+    function getSortedEntries(entries) {
+      return entries.slice().filter((item) => item.datum).sort((a, b) => a.datum.localeCompare(b.datum));
+    }
+
+    function findPreviousEntry(entries, targetDate) {
+      if (!entries.length) {
+        return null;
+      }
+      const sorted = getSortedEntries(entries);
+      if (!sorted.length) {
+        return null;
+      }
+      if (!targetDate) {
+        return sorted[sorted.length - 1];
+      }
+      for (let index = sorted.length - 1; index >= 0; index -= 1) {
+        const entry = sorted[index];
+        if (entry.datum && entry.datum < targetDate) {
+          return entry;
+        }
+      }
+      return sorted[sorted.length - 1];
+    }
+
+    function applyDefaultsFromLatestEntry(entries) {
+      if (!dosierungField) return;
+      const targetDate = dateField?.value || "";
+      const previous = findPreviousEntry(entries, targetDate);
+      if (previous?.dosierung) {
+        dosierungField.value = previous.dosierung;
+      } else if (!dosierungField.value) {
+        dosierungField.value = DEFAULT_DOSING_VALUE;
       }
     }
 
@@ -635,6 +706,7 @@
         storageMode = storageAvailable ? "local" : "memory";
         const entries = readEntriesFromLocal();
         cachedEntries = entries;
+        applyDefaultsFromLatestEntry(cachedEntries);
         if (showStatus) {
           if (storageAvailable) {
             setStatus("Bereit für neue Einträge.", "info");
@@ -654,6 +726,7 @@
         storageMode = "cloud";
         cachedEntries = entries;
         writeEntriesLocally(entries, updatedAt);
+        applyDefaultsFromLatestEntry(cachedEntries);
         if (showStatus) {
           setStatus("Bereit für neue Einträge.", "success");
         }
@@ -663,6 +736,7 @@
         storageMode = storageAvailable ? "local" : "memory";
         const entries = readEntriesFromLocal();
         cachedEntries = entries;
+        applyDefaultsFromLatestEntry(cachedEntries);
         if (showStatus) {
           const tone = storageAvailable ? "warning" : "error";
           const message = storageAvailable
@@ -741,6 +815,11 @@
         }
       }
 
+      entry.konz = entry.konz_morgen || entry.konz_nachmittag || entry.konz || "";
+      if (!entry.dosierung) {
+        entry.dosierung = DEFAULT_DOSING_VALUE;
+      }
+
       toggleFormDisabled(true);
       const writingOnline = Boolean(config) && storageMode === "cloud";
       const hasReliableStorage = writingOnline || storageAvailable;
@@ -759,9 +838,11 @@
         } else {
           next.push(entry);
         }
-        await persistEntries(next);
+        const savedEntries = await persistEntries(next);
+        cachedEntries = savedEntries;
         form.reset();
         setDefaultDate();
+        applyDefaultsFromLatestEntry(savedEntries);
       } finally {
         toggleFormDisabled(false);
       }
@@ -770,18 +851,21 @@
     function handleReset() {
       form.reset();
       setDefaultDate();
+      applyDefaultsFromLatestEntry(cachedEntries);
     }
 
     function bindDiaryEvents() {
       if (eventsBound) return;
       form?.addEventListener("submit", handleSubmit);
       resetBtn?.addEventListener("click", handleReset);
+      dateField?.addEventListener("change", () => applyDefaultsFromLatestEntry(cachedEntries));
       eventsBound = true;
     }
 
     async function startDiary() {
       bindDiaryEvents();
       setDefaultDate();
+      applyDefaultsFromLatestEntry(cachedEntries);
       await loadEntriesFromPreferredSource({ showStatus: true });
     }
 

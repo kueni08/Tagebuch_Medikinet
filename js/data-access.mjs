@@ -94,10 +94,18 @@ export function getActiveConfig() {
 export function normalizeEntry(entry) {
   return {
     datum: entry?.datum ?? "",
+    dosierung: entry?.dosierung ?? "",
     stimmung: entry?.stimmung ?? "",
-    konz: entry?.konz ?? "",
+    konz:
+      entry?.konz ??
+      entry?.konz_morgen ??
+      entry?.konz_nachmittag ??
+      "",
+    konz_morgen: entry?.konz_morgen ?? entry?.konz ?? "",
+    konz_nachmittag: entry?.konz_nachmittag ?? entry?.konz ?? "",
     vorm: entry?.vorm ?? "",
     abend: entry?.abend ?? "",
+    hausaufgaben: entry?.hausaufgaben ?? "",
     appetit: entry?.appetit ?? "",
     ausbr: Boolean(entry?.ausbr),
     kopfweh: Boolean(entry?.kopfweh),
