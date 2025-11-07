@@ -26,6 +26,128 @@ const exportBtn = document.getElementById("export-btn");
 const tableWrapper = document.querySelector(".table-wrapper");
 const mobileQuery = window.matchMedia("(max-width: 720px)");
 
+const MOOD_SCALE_DATA = getMoodScale();
+const MOOD_SERIES_SCALE = MOOD_SCALE_DATA.scale;
+
+const CONCENTRATION_SCALE = {
+  "😣 Kaum möglich": 1,
+  "☹️ Schwierig": 2,
+  "😐 Mittel": 3,
+  "🙂 Gut fokussiert": 4,
+  "😊 Sehr fokussiert": 5,
+};
+
+const OVERSTIMULATION_SCALE = {
+  "😣 Stark überreizt": 1,
+  "☹️ Deutlich angespannt": 2,
+  "😐 Leicht angespannt": 3,
+  "🙂 Gut reguliert": 4,
+  "😊 Sehr ruhig": 5,
+};
+
+const APPETITE_SCALE = {
+  "🐭 Kaum Hunger": 1,
+  "🐰 Wenig Hunger": 2,
+  "🐱 Normaler Hunger": 3,
+  "🦊 Großer Hunger": 4,
+  "🐻 Bärenhunger": 5,
+};
+
+const HOMEWORK_SCALE = {
+  "😌 Keine": 1,
+  "🙂 Wenige": 2,
+  "😐 Normal": 3,
+  "☹️ Viele": 4,
+  "😣 Sehr viele": 5,
+};
+
+const SERIES_CONFIG = [
+  {
+    id: "stimmung",
+    label: "Stimmung",
+    color: "#4f46e5",
+    accessor: (entry) => entry.stimmung,
+    scale: MOOD_SERIES_SCALE,
+    summary: "😣 → 😊",
+  },
+  {
+    id: "konz_morgen",
+    label: "Konzentration (Morgen)",
+    color: "#0ea5e9",
+    accessor: (entry) => [entry.konz_morgen, entry.konz],
+    scale: CONCENTRATION_SCALE,
+    summary: "😣 → 😊",
+  },
+  {
+    id: "konz_nachmittag",
+    label: "Konzentration (Nachmittag)",
+    color: "#0284c7",
+    accessor: (entry) => [entry.konz_nachmittag, entry.konz],
+    scale: CONCENTRATION_SCALE,
+    summary: "😣 → 😊",
+  },
+  {
+    id: "vorm",
+    label: "Überreizung (Vormittag)",
+    color: "#f97316",
+    accessor: (entry) => entry.vorm,
+    scale: OVERSTIMULATION_SCALE,
+    summary: "😣 → 😊",
+  },
+  {
+    id: "abend",
+    label: "Überreizung (Abend)",
+    color: "#ea580c",
+    accessor: (entry) => entry.abend,
+    scale: OVERSTIMULATION_SCALE,
+    summary: "😣 → 😊",
+  },
+  {
+    id: "appetit",
+    label: "Appetit",
+    color: "#16a34a",
+    accessor: (entry) => entry.appetit,
+    scale: APPETITE_SCALE,
+    summary: "🐭 → 🐻",
+  },
+  {
+    id: "hausaufgaben",
+    label: "Hausaufgabenmenge",
+    color: "#a855f7",
+    accessor: (entry) => entry.hausaufgaben,
+    scale: HOMEWORK_SCALE,
+    summary: "😌 → 😣",
+  },
+];
+
+const LEVELS = [1, 2, 3, 4, 5];
+const LEVEL_LABELS = {
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4",
+  5: "5",
+};
+
+const DOSAGE_COLORS = {
+  5: "#e6f8ec",
+  10: "#cdf2d6",
+  15: "#fff4c2",
+  20: "#fde3a7",
+  25: "#fbc27a",
+};
+
+const SIDE_EFFECT_MARKERS = [
+  { key: "kopfweh", icon: "🤕", label: "Kopfweh" },
+  { key: "bauchweh", icon: "🤢", label: "Bauchweh" },
+  { key: "schwindel", icon: "💫", label: "Schwindel" },
+];
+
+const OUTBURST_MARKER = { icon: "⚡", label: "Auffällige Ausbrüche" };
+
+const CHART_MIN_LEVEL = LEVELS[0];
+const CHART_MAX_LEVEL = LEVELS[LEVELS.length - 1];
+
 const PADDING = { top: 40, right: 24, bottom: 56, left: 72 };
 const VIEWBOX = { width: 800, height: 360 };
 
@@ -44,17 +166,32 @@ function clearChart() {
   }
 }
 
-function renderLegend(labels) {
+function renderLegend(series) {
   if (!legendList) return;
   legendList.innerHTML = "";
-  labels
-    .slice()
-    .sort((a, b) => labels.indexOf(a) - labels.indexOf(b))
-    .forEach((label) => {
-      const item = document.createElement("li");
-      item.textContent = label;
-      legendList.appendChild(item);
-    });
+  series.forEach((item) => {
+    const li = document.createElement("li");
+    li.className = "legend-item";
+
+    const swatch = document.createElement("span");
+    swatch.className = "legend-swatch";
+    swatch.style.backgroundColor = item.color;
+    li.appendChild(swatch);
+
+    const label = document.createElement("span");
+    label.className = "legend-label";
+    label.textContent = item.label;
+    li.appendChild(label);
+
+    if (item.summary) {
+      const summary = document.createElement("span");
+      summary.className = "legend-scale";
+      summary.textContent = item.summary;
+      li.appendChild(summary);
+    }
+
+    legendList.appendChild(li);
+  });
 }
 
 function setHistoryStatus(message, tone = "info") {
@@ -149,7 +286,7 @@ function renderHistory(entries) {
 
   if (!entries.length) {
     if (entriesBody) {
-      entriesBody.innerHTML = `<tr class="empty-state"><td colspan="10">Noch keine Einträge gespeichert.</td></tr>`;
+      entriesBody.innerHTML = `<tr class="empty-state"><td colspan="13">Noch keine Einträge gespeichert.</td></tr>`;
     }
     if (entriesList) {
       entriesList.innerHTML = `<p class="empty-state" role="status">Noch keine Einträge gespeichert.</p>`;
@@ -168,10 +305,13 @@ function renderHistory(entries) {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${entry.datum}</td>
+        <td>${entry.dosierung || "–"}</td>
         <td>${entry.stimmung}</td>
-        <td>${entry.konz}</td>
+        <td>${entry.konz_morgen || entry.konz || ""}</td>
+        <td>${entry.konz_nachmittag || entry.konz || ""}</td>
         <td>${entry.vorm}</td>
         <td>${entry.abend}</td>
+        <td>${entry.hausaufgaben || ""}</td>
         <td>${entry.appetit || ""}</td>
         <td>${entry.ausbr ? "✅ Ja" : "➖ Nein"}</td>
         <td>${formatSideEffectsText(entry)}</td>
@@ -195,8 +335,16 @@ function renderHistory(entries) {
         </div>
         <dl>
           <div>
-            <dt>Konzentration</dt>
-            <dd>${entry.konz}</dd>
+            <dt>Dosierung</dt>
+            <dd>${entry.dosierung || "Keine Angabe"}</dd>
+          </div>
+          <div>
+            <dt>Konzentration (Morgen)</dt>
+            <dd>${entry.konz_morgen || entry.konz || "Keine Angabe"}</dd>
+          </div>
+          <div>
+            <dt>Konzentration (Nachmittag)</dt>
+            <dd>${entry.konz_nachmittag || entry.konz || "Keine Angabe"}</dd>
           </div>
           <div>
             <dt>Überreizung (Vormittag)</dt>
@@ -205,6 +353,10 @@ function renderHistory(entries) {
           <div>
             <dt>Überreizung (Abend)</dt>
             <dd>${entry.abend}</dd>
+          </div>
+          <div>
+            <dt>Hausaufgaben</dt>
+            <dd>${entry.hausaufgaben || "Keine Angabe"}</dd>
           </div>
           <div>
             <dt>Appetit</dt>
@@ -254,10 +406,13 @@ function exportCsv() {
 
   const header = [
     "Datum",
+    "Dosierung",
     "Stimmung",
-    "Konzentration",
+    "Konzentration Morgen",
+    "Konzentration Nachmittag",
     "Überreizung Vormittag",
     "Überreizung Abend",
+    "Hausaufgaben",
     "Appetit",
     "Ausbrüche",
     "Kopfweh",
@@ -268,10 +423,13 @@ function exportCsv() {
 
   const rows = cachedEntries.map((entry) => [
     entry.datum,
+    entry.dosierung || "",
     entry.stimmung,
-    entry.konz,
+    entry.konz_morgen || entry.konz || "",
+    entry.konz_nachmittag || entry.konz || "",
     entry.vorm,
     entry.abend,
+    entry.hausaufgaben || "",
     entry.appetit || "",
     entry.ausbr ? "Ja" : "Nein",
     entry.kopfweh ? "Ja" : "Nein",
@@ -333,14 +491,13 @@ function buildAxes() {
   yLine.setAttribute("y2", VIEWBOX.height - PADDING.bottom);
   axis.appendChild(yLine);
 
-  const { labels, scale: moodScale } = getMoodScale();
-  const uniqueLabels = labels.slice().sort((a, b) => moodScale[a] - moodScale[b]);
-  const step =
-    (VIEWBOX.height - PADDING.top - PADDING.bottom) /
-    (uniqueLabels.length > 1 ? uniqueLabels.length - 1 : 1);
+  const chartHeight = VIEWBOX.height - PADDING.top - PADDING.bottom;
+  const denominator = CHART_MAX_LEVEL - CHART_MIN_LEVEL || 1;
 
-  uniqueLabels.forEach((label, index) => {
-    const y = VIEWBOX.height - PADDING.bottom - index * step;
+  LEVELS.forEach((level) => {
+    const ratio = (level - CHART_MIN_LEVEL) / denominator;
+    const y = VIEWBOX.height - PADDING.bottom - ratio * chartHeight;
+
     const grid = document.createElementNS("http://www.w3.org/2000/svg", "line");
     grid.setAttribute("x1", PADDING.left);
     grid.setAttribute("y1", y);
@@ -356,43 +513,145 @@ function buildAxes() {
     labelText.setAttribute("text-anchor", "end");
     labelText.setAttribute("fill", "#4b5563");
     labelText.setAttribute("font-size", "14");
-    labelText.textContent = label;
+    labelText.textContent = LEVEL_LABELS[level] ?? String(level);
     axis.appendChild(labelText);
   });
 
   svg.appendChild(axis);
 }
 
-function renderMoodLine(entries) {
-  const { scale } = getMoodScale();
-  const filtered = entries.filter((entry) => scale[entry.stimmung]);
-  if (!filtered.length) {
-    renderEmptyState("Keine Stimmungsdaten vorhanden.");
+function parseDosageValue(text) {
+  if (typeof text !== "string") {
+    return null;
+  }
+  const match = text.match(/(\d+)/);
+  if (!match) {
+    return null;
+  }
+  const value = Number.parseInt(match[1], 10);
+  return Number.isNaN(value) ? null : value;
+}
+
+function getDosageColorForValue(value) {
+  if (value == null) {
+    return null;
+  }
+  if (value in DOSAGE_COLORS) {
+    return DOSAGE_COLORS[value];
+  }
+  const sortedKeys = Object.keys(DOSAGE_COLORS)
+    .map((key) => Number.parseInt(key, 10))
+    .filter((key) => !Number.isNaN(key))
+    .sort((a, b) => a - b);
+  if (!sortedKeys.length) {
+    return null;
+  }
+  for (const key of sortedKeys) {
+    if (value <= key) {
+      return DOSAGE_COLORS[key];
+    }
+  }
+  return DOSAGE_COLORS[sortedKeys[sortedKeys.length - 1]];
+}
+
+function renderDosageBackground(timeline) {
+  if (!timeline.length) {
     return;
   }
-  filtered.sort((a, b) => a.datum.localeCompare(b.datum));
-  const points = filtered.map((entry, index) => {
-    const moodValue = scale[entry.stimmung];
-    return {
-      entry,
-      x: PADDING.left +
-        (filtered.length === 1
-          ? (VIEWBOX.width - PADDING.left - PADDING.right) / 2
-          : (index / (filtered.length - 1)) * (VIEWBOX.width - PADDING.left - PADDING.right)),
-      y:
-        PADDING.top +
-        (1 - (moodValue - 1) / (Math.max(...Object.values(scale)) - 1)) *
-          (VIEWBOX.height - PADDING.top - PADDING.bottom),
-    };
+  const chartHeight = VIEWBOX.height - PADDING.top - PADDING.bottom;
+  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  timeline.forEach((point, index) => {
+    const dosageValue = parseDosageValue(point.entry.dosierung);
+    if (!dosageValue) {
+      return;
+    }
+    const color = getDosageColorForValue(dosageValue);
+    if (!color) {
+      return;
+    }
+    const previousX = index === 0 ? PADDING.left : (timeline[index - 1].x + point.x) / 2;
+    const nextX =
+      index === timeline.length - 1
+        ? VIEWBOX.width - PADDING.right
+        : (point.x + timeline[index + 1].x) / 2;
+    const width = Math.max(0, nextX - previousX);
+    if (!width) {
+      return;
+    }
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", previousX.toFixed(2));
+    rect.setAttribute("y", PADDING.top);
+    rect.setAttribute("width", width.toFixed(2));
+    rect.setAttribute("height", chartHeight);
+    rect.setAttribute("fill", color);
+    rect.setAttribute("fill-opacity", "0.35");
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = `${point.entry.datum}: Dosierung ${point.entry.dosierung || "unbekannt"}`;
+    rect.appendChild(title);
+    group.appendChild(rect);
   });
+  if (group.childNodes.length) {
+    svg.appendChild(group);
+  }
+}
 
+function buildTimeline(entries) {
+  const filtered = entries
+    .filter((entry) => entry.datum)
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+  if (!filtered.length) {
+    return [];
+  }
+  const range = VIEWBOX.width - PADDING.left - PADDING.right;
+  return filtered.map((entry, index) => {
+    const x =
+      PADDING.left +
+      (filtered.length === 1 ? range / 2 : (index / (filtered.length - 1)) * range);
+    return { entry, x };
+  });
+}
+
+function resolveSeriesValue(series, entry) {
+  const raw = typeof series.accessor === "function" ? series.accessor(entry) : entry[series.id];
+  const candidates = Array.isArray(raw) ? raw : [raw];
+  for (const candidate of candidates) {
+    if (typeof candidate !== "string") {
+      continue;
+    }
+    const value = series.scale?.[candidate];
+    if (typeof value === "number") {
+      return { label: candidate, level: value };
+    }
+  }
+  return null;
+}
+
+function getSeriesPoints(series, timeline) {
+  const chartHeight = VIEWBOX.height - PADDING.top - PADDING.bottom;
+  const denominator = CHART_MAX_LEVEL - CHART_MIN_LEVEL || 1;
+  return timeline.reduce((points, point) => {
+    const resolved = resolveSeriesValue(series, point.entry);
+    if (!resolved) {
+      return points;
+    }
+    const ratio = (resolved.level - CHART_MIN_LEVEL) / denominator;
+    const y = PADDING.top + (1 - ratio) * chartHeight;
+    points.push({ ...point, y, label: resolved.label, level: resolved.level });
+    return points;
+  }, []);
+}
+
+function drawSeries(series, points) {
+  if (!points.length) {
+    return;
+  }
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
   const d = points
     .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
     .join(" ");
   path.setAttribute("d", d);
   path.setAttribute("fill", "none");
-  path.setAttribute("stroke", "#4f46e5");
+  path.setAttribute("stroke", series.color);
   path.setAttribute("stroke-width", "3");
   path.setAttribute("stroke-linejoin", "round");
   path.setAttribute("stroke-linecap", "round");
@@ -402,30 +661,19 @@ function renderMoodLine(entries) {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", point.x);
     circle.setAttribute("cy", point.y);
-    circle.setAttribute("r", 6);
-    circle.setAttribute("fill", "#4f46e5");
+    circle.setAttribute("r", 5.5);
+    circle.setAttribute("fill", series.color);
     circle.setAttribute("stroke", "#ffffff");
     circle.setAttribute("stroke-width", "2");
-
     const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-    title.textContent = `${point.entry.datum}: ${point.entry.stimmung}`;
+    title.textContent = `${point.entry.datum}: ${series.label} – ${point.label}`;
     circle.appendChild(title);
     svg.appendChild(circle);
+  });
+}
 
-    if (isOutburst(point.entry)) {
-      const marker = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      marker.setAttribute("x", point.x);
-      marker.setAttribute("y", point.y - 18);
-      marker.setAttribute("text-anchor", "middle");
-      marker.setAttribute("font-size", "18");
-      marker.setAttribute("fill", "#ef4444");
-      marker.textContent = "⚡";
-      const markerTitle = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      markerTitle.textContent = `${point.entry.datum}: Auffällige Ausbrüche`; 
-      marker.appendChild(markerTitle);
-      svg.appendChild(marker);
-    }
-
+function renderXAxisLabels(timeline) {
+  timeline.forEach((point) => {
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", point.x);
     label.setAttribute("y", VIEWBOX.height - PADDING.bottom + 24);
@@ -437,23 +685,100 @@ function renderMoodLine(entries) {
   });
 }
 
+function getEntryMarkers(entry) {
+  const markers = [];
+  if (isOutburst(entry)) {
+    markers.push({ ...OUTBURST_MARKER });
+  }
+  SIDE_EFFECT_MARKERS.forEach((marker) => {
+    if (entry?.[marker.key]) {
+      markers.push({ icon: marker.icon, label: marker.label });
+    }
+  });
+  return markers;
+}
+
+function renderEntryMarkers(timeline, pointsBySeries) {
+  const baseline = new Map();
+  Object.values(pointsBySeries).forEach((seriesPoints) => {
+    seriesPoints.forEach((point) => {
+      const current = baseline.get(point.entry);
+      const next = typeof current === "number" ? Math.min(current, point.y) : point.y;
+      baseline.set(point.entry, next);
+    });
+  });
+
+  timeline.forEach((point) => {
+    const markers = getEntryMarkers(point.entry);
+    if (!markers.length) {
+      return;
+    }
+    const minY = baseline.get(point.entry) ?? VIEWBOX.height - PADDING.bottom;
+    const baseY = Math.max(PADDING.top + 18, minY - 18);
+    markers.forEach((marker, index) => {
+      const offset = (index - (markers.length - 1) / 2) * 16;
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      icon.setAttribute("x", point.x + offset);
+      icon.setAttribute("y", baseY);
+      icon.setAttribute("text-anchor", "middle");
+      icon.setAttribute("font-size", "16");
+      icon.textContent = marker.icon;
+      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      title.textContent = `${point.entry.datum}: ${marker.label}`;
+      icon.appendChild(title);
+      svg.appendChild(icon);
+    });
+  });
+}
+
+function renderChartSeries(entries) {
+  const timeline = buildTimeline(entries);
+  if (!timeline.length) {
+    return false;
+  }
+  const pointsBySeries = {};
+  let hasSeries = false;
+  SERIES_CONFIG.forEach((series) => {
+    const points = getSeriesPoints(series, timeline);
+    if (points.length) {
+      hasSeries = true;
+      pointsBySeries[series.id] = points;
+    }
+  });
+  if (!hasSeries) {
+    return false;
+  }
+  renderDosageBackground(timeline);
+  buildAxes();
+  SERIES_CONFIG.forEach((series) => {
+    const points = pointsBySeries[series.id];
+    if (!points?.length) {
+      return;
+    }
+    drawSeries(series, points);
+  });
+  renderXAxisLabels(timeline);
+  renderEntryMarkers(timeline, pointsBySeries);
+  return true;
+}
+
 let cachedEntries = [];
 let cachedUpdatedAt = null;
 
 function render() {
+  clearChart();
   if (!cachedEntries.length) {
     renderEmptyState("Noch keine Einträge vorhanden");
     chartSummary.textContent = buildHistorySummary(cachedEntries, cachedUpdatedAt);
-    if (legendList) {
-      legendList.innerHTML = "";
-    }
+    renderLegend(SERIES_CONFIG);
     return;
   }
-  clearChart();
-  buildAxes();
-  renderMoodLine(cachedEntries);
+  const hasChart = renderChartSeries(cachedEntries);
+  if (!hasChart) {
+    renderEmptyState("Keine auswertbaren Daten für das Diagramm.");
+  }
   chartSummary.textContent = buildHistorySummary(cachedEntries, cachedUpdatedAt);
-  renderLegend(getMoodScale().labels);
+  renderLegend(SERIES_CONFIG);
 }
 
 async function getEntriesForWrite() {
