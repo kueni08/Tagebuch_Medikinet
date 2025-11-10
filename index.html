@@ -674,14 +674,65 @@
       return sorted[sorted.length - 1];
     }
 
+    function getFormControl(name) {
+      if (!form?.elements) return null;
+      if (typeof form.elements.namedItem === "function") {
+        const control = form.elements.namedItem(name);
+        if (control) {
+          return control;
+        }
+      }
+      return form.elements[name] || null;
+    }
+
+    function toControlArray(control) {
+      if (!control) return [];
+      if (typeof control.length === "number" && typeof control.item === "function") {
+        return Array.from(control);
+      }
+      return [control];
+    }
+
     function applyDefaultsFromLatestEntry(entries) {
-      if (!dosierungField) return;
+      if (!form) return;
       const targetDate = dateField?.value || "";
       const previous = findPreviousEntry(entries, targetDate);
-      if (previous?.dosierung) {
-        dosierungField.value = previous.dosierung;
-      } else if (!dosierungField.value) {
-        dosierungField.value = DEFAULT_DOSING_VALUE;
+
+      if (!previous) {
+        if (dosierungField && !dosierungField.value) {
+          dosierungField.value = DEFAULT_DOSING_VALUE;
+        }
+        return;
+      }
+
+      for (const field of fields) {
+        if (field === "datum") continue;
+
+        const control = getFormControl(field);
+        if (!control) continue;
+
+        if (booleanFields.has(field)) {
+          for (const element of toControlArray(control)) {
+            if ("checked" in element) {
+              element.checked = Boolean(previous[field]);
+            }
+          }
+          continue;
+        }
+
+        const rawValue = previous[field];
+        const fallbackValue = field === "dosierung" ? DEFAULT_DOSING_VALUE : "";
+        const nextValue =
+          rawValue !== undefined && rawValue !== null && rawValue !== ""
+            ? rawValue
+            : fallbackValue;
+        const normalizedValue = typeof nextValue === "string" ? nextValue : nextValue?.toString?.() || "";
+
+        for (const element of toControlArray(control)) {
+          if ("value" in element) {
+            element.value = normalizedValue;
+          }
+        }
       }
     }
 
